@@ -20,7 +20,7 @@ export function useAssignments() {
         name,
         softFile,
         loudFile,
-        volumeBalance: 50,
+        volumeBalance: 0,
         isMuted: false
       }
 

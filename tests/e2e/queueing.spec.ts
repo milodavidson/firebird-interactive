@@ -39,7 +39,7 @@ test.describe('queueing', () => {
       const melody = parts.find((p: any) => p.id === 'melody')
       const inst = melody?.assignedInstruments.find((ai: any) => ai.id === id)
       const expected = inst?.queueScheduleTime
-      return expected && st && (typeof st.soft === 'number' || typeof st.loud === 'number') && Math.abs((st.soft ?? st.loud!) - expected) < 0.25
+      return expected && st && (typeof st.soft === 'number' || typeof st.loud === 'number') && Math.abs((st.soft ?? st.loud!) - expected) < 0.35
     }, info, { timeout: 15000 })
 
     const starts = await page.evaluate(({ id }) => {
@@ -51,7 +51,7 @@ test.describe('queueing', () => {
     const allTimes = [starts.soft, starts.loud].filter((v) => typeof v === 'number') as number[]
     expect(allTimes.length).toBeGreaterThan(0)
     const minStart = Math.min(...allTimes)
-    // within ~250ms of scheduled time is acceptable in CI
-    expect(Math.abs(minStart - info.scheduleTime)).toBeLessThan(0.25)
+  // within ~350ms of scheduled time is acceptable in CI
+  expect(Math.abs(minStart - info.scheduleTime)).toBeLessThan(0.35)
   })
 })

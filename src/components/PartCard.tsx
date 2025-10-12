@@ -15,10 +15,9 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
     <div
       onDragOver={e => e.preventDefault()}
       onDrop={e => {
-        const dropPartId = e.dataTransfer.getData('text/partId') as 'melody' | 'harmony' | 'rhythm' | 'texture'
         const instrumentId = e.dataTransfer.getData('text/instrumentId')
         const instrumentName = e.dataTransfer.getData('text/instrumentName')
-        if (dropPartId && instrumentId) {
+        if (instrumentId) {
           // prevent duplicates and capacity
           if (part.assignedInstruments.some(ai => ai.instrumentId === instrumentId)) return
           if (atCapacity) return
@@ -27,13 +26,11 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
       }}
       onClick={() => {
         if (selectedInstrument) {
-          const [selPart, instId] = selectedInstrument.id.split(':')
-          if (selPart === partId) {
-            if (part.assignedInstruments.some(ai => ai.instrumentId === instId)) return
-            if (atCapacity) return
-            addInstrument(partId, instId, selectedInstrument.name)
-            setSelectedInstrument(null)
-          }
+          const instId = selectedInstrument.id
+          if (part.assignedInstruments.some(ai => ai.instrumentId === instId)) return
+          if (atCapacity) return
+          addInstrument(partId, instId, selectedInstrument.name)
+          setSelectedInstrument(null)
         }
       }}
       style={{ border: '1px solid #ddd', borderRadius: 8, padding: 12, opacity: atCapacity ? 0.6 : 1 }}
