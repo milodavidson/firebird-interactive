@@ -1,0 +1,31 @@
+{
+  "name": "firebird-interactive",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
+    "test:e2e": "playwright test",
+    "playwright:install": "npx playwright install --with-deps",
+    "check-audio": "node scripts/check-audio-files.js"
+  },
+  "dependencies": {
+    "next": "14.2.5",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "zustand": "4.5.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.47.2",
+    "@types/node": "20.12.12",
+    "@types/react": "18.2.66",
+    "@types/react-dom": "18.2.22",
+    "eslint": "8.57.0",
+    "eslint-config-next": "14.2.5",
+    "typescript": "5.4.5",
+    "vitest": "1.6.0"
+  }
+}
