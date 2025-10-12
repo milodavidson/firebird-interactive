@@ -10,8 +10,10 @@ import type { AudioScheduler } from '@/lib/audio/AudioScheduler'
 function beatInLoop(beatIndex: number, tempo: Tempo) {
   const spb = secondsPerBeat(tempo)
   const bpl = Math.round(loopDuration(tempo) / spb)
-  const mod = ((beatIndex % bpl) + bpl) % bpl
-  return { beatInLoop: mod, beatsPerLoop: bpl }
+  // Display as 1-based in-loop beat number
+  const zeroBased = beatIndex - 1
+  const mod = ((zeroBased % bpl) + bpl) % bpl
+  return { beatInLoop: mod + 1, beatsPerLoop: bpl }
 }
 
 export default function BeatDebug({ scheduler }: { scheduler?: AudioScheduler }) {
@@ -73,7 +75,7 @@ export default function BeatDebug({ scheduler }: { scheduler?: AudioScheduler })
       <div>
         Next beat (current grid): {data.nextBeatIdx ?? '-'}
         {data.currentInLoop && (
-          <span> (in-loop {data.currentInLoop.beatInLoop + 1})</span>
+          <span> (in-loop {data.currentInLoop.beatInLoop})</span>
         )}
       </div>
       <div>
@@ -82,7 +84,7 @@ export default function BeatDebug({ scheduler }: { scheduler?: AudioScheduler })
       <div>
         Target beat on switch: {data.targetBeatIdx ?? '-'}
         {data.targetInLoop && (
-          <span> (in-loop {data.targetInLoop.beatInLoop + 1})</span>
+          <span> (in-loop {data.targetInLoop.beatInLoop})</span>
         )}
       </div>
     </div>

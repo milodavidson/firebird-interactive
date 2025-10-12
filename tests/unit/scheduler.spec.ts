@@ -17,6 +17,7 @@ describe('audio math helpers', () => {
     const beatIndex = 5
     const bufferDuration = 8.2
     const off = computeTargetOffsetForBeat(beatIndex, tempo, bufferDuration)
-    expect(off).toBeCloseTo((beatIndex * spb) % bufferDuration, 6)
+    // offset uses 1-based beat index; subtract 1 to compute zero-based position within loop
+    expect(off).toBeCloseTo(((beatIndex - 1) * spb) % bufferDuration, 6)
   })
 })

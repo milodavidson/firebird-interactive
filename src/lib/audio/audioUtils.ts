@@ -8,6 +8,11 @@ export function loopDuration(tempo: Tempo): number {
   return tempo === 'fast' ? 10.5 : 21
 }
 
+export function beatsPerLoop(tempo: Tempo): number {
+  const spb = secondsPerBeat(tempo)
+  return Math.round(loopDuration(tempo) / spb)
+}
+
 export function computeCurrentBeatIndex(audioNow: number, transportStart: number, tempo: Tempo): number {
   const spb = secondsPerBeat(tempo)
   const elapsed = Math.max(0, audioNow - transportStart)
@@ -22,16 +27,40 @@ export function computeNextBeatScheduleTime(audioNow: number, transportStart: nu
   return { nextBeatIndex, scheduleTime }
 }
 
+export function computeNextLoopScheduleTime(audioNow: number, transportStart: number, tempo: Tempo) {
+  const loopDur = loopDuration(tempo)
+  const spb = secondsPerBeat(tempo)
+  const elapsed = Math.max(0, audioNow - transportStart)
+  const loopsSoFar = Math.floor(elapsed / loopDur)
+  const nextLoopStartTime = transportStart + (loopsSoFar + 1) * loopDur
+  const nextLoopBeatIndex = Math.floor((nextLoopStartTime - transportStart) / spb)
+  return { nextLoopBeatIndex, scheduleTime: nextLoopStartTime }
+}
+
+// Convert an absolute 1-based beat index since transport start to a 1-based within-loop beat number for a given tempo
+export function computeWithinLoopBeat(absoluteBeatIndex: number, tempo: Tempo): number {
+  const bpl = beatsPerLoop(tempo)
+  const zero = absoluteBeatIndex - 1
+  return ((zero % bpl) + bpl) % bpl + 1
+}
+
+// Compute the 1-based within-loop beat number for a given audio time
+export function computeWithinLoopBeatAtTime(audioNow: number, transportStart: number, tempo: Tempo): number {
+  const abs = computeCurrentBeatIndex(audioNow, transportStart, tempo) + 1
+  return computeWithinLoopBeat(abs, tempo)
+}
+
 export function computeTargetOffsetForBeat(beatIndex: number, tempo: Tempo, bufferDuration: number): number {
   const spb = secondsPerBeat(tempo)
-  const canonicalLoop = loopDuration(tempo)
-  const beatsPerLoop = Math.round(canonicalLoop / spb)
-  const beatInLoop = ((beatIndex % beatsPerLoop) + beatsPerLoop) % beatsPerLoop
-  let offset = beatInLoop * spb
-  // Avoid floating rounding hitting the exact buffer end; clamp to start
-  const epsilon = 1e-3
-  if (offset >= bufferDuration - epsilon) offset = 0
-  return offset
+  const bpl = Math.round(loopDuration(tempo) / spb)
+  // beatIndex is 1-based for "next beat"; convert to 0-based in-loop index so beat 1 maps to offset 0
+  const zeroBased = beatIndex - 1
+  const withinLoopBeat = ((zeroBased % bpl) + bpl) % bpl
+  const ideal = withinLoopBeat * spb
+  // Align to the actual buffer by modulo its duration
+  const epsilon = 0.0005
+  const offset = ideal % Math.max(epsilon, bufferDuration)
+  return Math.min(Math.max(0, offset), bufferDuration - epsilon)
 }
 
 export function applyDecodeFades(buffer: AudioBuffer, fadeMs = 20) {

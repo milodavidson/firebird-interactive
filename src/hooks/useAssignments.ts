@@ -4,7 +4,7 @@ import { useCallback } from 'react'
 import { usePartsStore } from './usePartsStore'
 import type { PartId, AssignedInstrument } from '@/lib/types'
 import { audioService } from '@/lib/audio/AudioService'
-import { computeNextBeatScheduleTime, loopDuration, secondsPerBeat } from '@/lib/audio/audioUtils'
+import { computeNextLoopScheduleTime } from '@/lib/audio/audioUtils'
 
 export function useAssignments() {
   const store = usePartsStore()
@@ -43,11 +43,11 @@ export function useAssignments() {
       } else {
         // playing: mark queued and push to deferredQueueRef
         audioService.initIfNeeded()
-        const ctx = audioService.audioCtx!
-        const transport = store.transportStartRef.current!
-        const { scheduleTime } = computeNextBeatScheduleTime(ctx.currentTime, transport, store.currentTempoRef.current)
-  const remaining = Math.max(0, scheduleTime - ctx.currentTime) // to next beat boundary
-  const queued = { ...assigned, isLoading: true, queueStartTime: ctx.currentTime, queueTimeRemaining: remaining, queueScheduleTime: scheduleTime }
+    const ctx = audioService.audioCtx!
+    const transport = store.transportStartRef.current!
+    const { scheduleTime } = computeNextLoopScheduleTime(ctx.currentTime, transport, store.currentTempoRef.current)
+    const remaining = Math.max(0, scheduleTime - ctx.currentTime)
+    const queued = { ...assigned, isLoading: true, queueStartTime: ctx.currentTime, queueTimeRemaining: remaining, queueScheduleTime: scheduleTime }
         store.setParts(prev => prev.map(p => (p.id === partId ? { ...p, assignedInstruments: [...p.assignedInstruments, queued] } : p)))
         store.deferredQueueRef.current = [...store.deferredQueueRef.current, queued]
         // preload current tempo first

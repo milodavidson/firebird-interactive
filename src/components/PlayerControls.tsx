@@ -47,6 +47,7 @@ export default function PlayerControls({ scheduler }: Props = {}) {
   const onTempoChange = useCallback(
     async (e: React.ChangeEvent<HTMLSelectElement>) => {
       const t = e.target.value as 'fast' | 'slow'
+      // Update UI selection immediately, but do not mutate currentTempoRef when playing.
       setTempo(t)
       if (play && scheduler) {
         await scheduler.scheduleTempoSwitch(t)

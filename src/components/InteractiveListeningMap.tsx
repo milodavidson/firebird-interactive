@@ -21,7 +21,6 @@ export default function InteractiveListeningMap() {
         deferredQueueRef: store.deferredQueueRef,
         removedInstanceIdsRef: store.removedInstanceIdsRef,
         nodeStartTimesRef: store.nodeStartTimesRef,
-        loopAnchorRef: store.loopAnchorRef,
         setParts: store.setParts
       }),
     []
@@ -34,11 +33,11 @@ export default function InteractiveListeningMap() {
         <h1 style={{ margin: 0, fontSize: 20 }}>Interactive Listening Map</h1>
         <p style={{ color: '#555' }}>Assign instruments to parts and play.</p>
   <PlayerControls scheduler={scheduler} />
-        <BeatDebug scheduler={scheduler} />
         <InstrumentList />
       </div>
       <div>
         <PartsGrid />
+        <BeatDebug scheduler={scheduler} />
       </div>
     </div>
   )

@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect } from 'react'
+import { computeCurrentBeatIndex } from '@/lib/audio/audioUtils'
+import { computeWithinLoopBeat, computeWithinLoopBeatAtTime } from '@/lib/audio/audioUtils'
 import { usePartsStore } from './usePartsStore'
 import { audioService } from '@/lib/audio/AudioService'
 import type { AudioInspectorSnapshot } from '@/lib/types'
@@ -33,8 +35,47 @@ export function useAudioInspector(scheduler?: AudioScheduler) {
       getPlayState: () => store.playStateRef.current,
       getParts: () => JSON.parse(JSON.stringify(store.partsRef.current)),
       getTransportStartTime: () => store.transportStartRef.current,
-      getTempo: () => store.currentTempoRef.current
+      getTempo: () => store.currentTempoRef.current,
+      getAudioTime: () => (audioService.audioCtx ? audioService.audioCtx.currentTime : null),
+      getWithinBeat1: () => {
+        const ctx = audioService.audioCtx
+        if (!ctx) return null
+        const start = store.transportStartRef.current
+        const tempo = store.currentTempoRef.current
+        if (start == null) return null
+        const abs = computeCurrentBeatIndex(ctx.currentTime, start, tempo) + 1
+        return computeWithinLoopBeat(abs, tempo)
+      },
+      getNextWithinBeat1: () => {
+        const ctx = audioService.audioCtx
+        if (!ctx) return null
+        const start = store.transportStartRef.current
+        const tempo = store.currentTempoRef.current
+        if (start == null) return null
+        const absNext = computeCurrentBeatIndex(ctx.currentTime, start, tempo) + 2
+        return computeWithinLoopBeat(absNext, tempo)
+      },
+      getWithinBeatAtTime: (t: number) => {
+        const start = store.transportStartRef.current
+        const tempo = store.currentTempoRef.current
+        if (start == null) return null
+        return computeWithinLoopBeatAtTime(t, start, tempo)
+      },
+      getWithinBeatAtTimeForTempo: (t: number, tempo: 'fast' | 'slow') => {
+        const start = store.transportStartRef.current
+        if (start == null) return null
+        return computeWithinLoopBeatAtTime(t, start, tempo)
+      },
+      getLastTempoSwitchExecution: () => (scheduler ? scheduler.getLastTempoSwitchExecution() : null)
     }
+
+    // Optional extended info for debugging: arrays of start times
+    Object.defineProperty(inspector, 'getNodeStartTimesExt', {
+      get() {
+        return () => JSON.parse(JSON.stringify(store.nodeStartTimesRef.current))
+      },
+      enumerable: false
+    })
 
     Object.defineProperty(inspector, 'scheduledTempoSwitch', {
       get() {
@@ -43,7 +84,25 @@ export function useAudioInspector(scheduler?: AudioScheduler) {
       enumerable: true
     })
 
+    Object.defineProperty(inspector, 'getPostSwitchBeatCorrection', {
+      get() {
+        return () => (scheduler ? scheduler.getPostSwitchBeatCorrection() : 0)
+      },
+      enumerable: true
+    })
+    Object.defineProperty(inspector, 'setPostSwitchBeatCorrection', {
+      get() {
+        return (n: number) => scheduler?.setPostSwitchBeatCorrection(n)
+      },
+      enumerable: true
+    })
+
     window.__audioInspector = inspector
+    if (scheduler) {
+      // Convenience wrappers to tweak scheduler behavior at runtime
+      ;(inspector as any).getStartMode = () => scheduler.getStartMode()
+      ;(inspector as any).setStartMode = (m: 'next-beat' | 'immediate') => scheduler.setStartMode(m)
+    }
     return () => {
       delete window.__audioInspector
     }

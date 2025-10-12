@@ -16,8 +16,7 @@ export type Store = {
   currentTempoRef: { current: Tempo }
   deferredQueueRef: { current: AssignedInstrument[] }
   removedInstanceIdsRef: { current: Set<string> }
-  nodeStartTimesRef: { current: Record<string, { soft?: number[]; loud?: number[] }> }
-  loopAnchorRef: { current: number | null }
+  nodeStartTimesRef: { current: Record<string, { soft?: number[]; loud?: number[]; beatIndex?: number[] }> }
   setPlay: (p: boolean) => void
   setTempo: (t: Tempo) => void
   setParts: (updater: (prev: MusicalPart[]) => MusicalPart[]) => void
@@ -45,14 +44,17 @@ export const usePartsStore = create<Store>((set: any, get: any) => ({
   deferredQueueRef: { current: [] },
   removedInstanceIdsRef: { current: new Set() },
   nodeStartTimesRef: { current: {} },
-  loopAnchorRef: { current: null },
   setPlay(p: boolean) {
     set({ play: p })
     get().playStateRef.current = p
   },
   setTempo(t: 'fast' | 'slow') {
     set({ tempo: t })
-    get().currentTempoRef.current = t
+    // Only update the runtime tempo ref when not actively playing;
+    // during playback, the scheduler controls when currentTempoRef changes.
+    if (!get().playStateRef.current) {
+      get().currentTempoRef.current = t
+    }
   },
   setParts(updater: (prev: MusicalPart[]) => MusicalPart[]) {
     set((state: { parts: MusicalPart[] }) => {
