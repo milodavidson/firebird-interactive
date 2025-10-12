@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Play, Pause } from 'lucide-react'
@@ -13,7 +13,7 @@ type Props = {
 }
 
 export function LoopProgress({ size = 72, stroke = 6, onToggle }: Props) {
-  const { play, currentTempoRef, transportStartRef } = usePartsStore()
+  const { play, currentTempoRef, transportStartRef, tempo: uiTempo } = usePartsStore()
   const radius = (size - stroke) / 2
   const circumference = 2 * Math.PI * radius
   const [progress, setProgress] = useState(0)
@@ -45,6 +45,7 @@ export function LoopProgress({ size = 72, stroke = 6, onToggle }: Props) {
     return circumference * (1 - progress)
   }, [circumference, progress])
 
+  const strokeColor = uiTempo === 'fast' ? 'var(--color-brand-red)' : 'var(--color-brand-navy)'
   return (
     <button
       aria-label={play ? 'Pause' : 'Play'}
@@ -66,7 +67,7 @@ export function LoopProgress({ size = 72, stroke = 6, onToggle }: Props) {
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="var(--color-brand-navy)"
+          stroke={strokeColor}
           strokeWidth={stroke}
           strokeDasharray={circumference}
           strokeDashoffset={dashOffset}

@@ -18,6 +18,7 @@ export class AudioScheduler {
   private switchCount = 0
   private postSwitchBeatCorrection = 0 // 0 by default; can be set to +1/-1 via inspector
   private startMode: 'next-beat' | 'immediate' = 'immediate'
+  private hasStarted = false
   private setPartsCb?: (updater: (prev: MusicalPart[]) => MusicalPart[]) => void
 
   constructor(params: {
@@ -48,27 +49,40 @@ export class AudioScheduler {
     const tempo = this.currentTempoRef.current
     let nextBeatIndex: number
     let scheduleTime: number
-  if (this.startMode === 'next-beat') {
-      // Start at the next beat boundary
-      const r = computeNextBeatScheduleTime(ctx.currentTime, transportStart, tempo)
-      nextBeatIndex = r.nextBeatIndex
-      scheduleTime = r.scheduleTime
-    } else {
-      // Start immediately with a tiny lead; treat this as beat 1 of the loop
+    if (!this.hasStarted && this.startMode === 'immediate') {
+      // First start: schedule immediately with a tiny lead and anchor transport to audible start
       const lead = 0.02
       scheduleTime = ctx.currentTime + lead
       nextBeatIndex = 1
-      // Re-anchor transport so that scheduleTime corresponds to beat 1 (index 1)
       this.transportStartRef.current = scheduleTime
+      this.hasStarted = true
+    } else if (this.startMode === 'next-beat' && !this.hasStarted) {
+      // First start at next beat boundary
+      const r = computeNextBeatScheduleTime(ctx.currentTime, transportStart, tempo)
+      nextBeatIndex = r.nextBeatIndex
+      scheduleTime = r.scheduleTime
+      this.hasStarted = true
+    } else {
+      // Subsequent loop starts: schedule exactly at the next loop boundary on the anchored grid
+      const { nextLoopBeatIndex, scheduleTime: loopStart } = computeNextLoopScheduleTime(
+        ctx.currentTime,
+        this.transportStartRef.current!,
+        tempo
+      )
+      scheduleTime = loopStart
+      // Convert 0-based absolute beat count at loop start to 1-based absolute index
+      // so that within-loop mapping at a loop boundary resolves to beat 1 (offset 0).
+      nextBeatIndex = nextLoopBeatIndex + 1
     }
     try {
       // eslint-disable-next-line no-console
       console.log('[LoopStart]', { now: ctx.currentTime, transportStart, tempo, nextBeatIndex, scheduleTime })
     } catch {}
-    const spb = secondsPerBeat(tempo)
     // schedule all assigned instruments
     for (const part of this.partsRef.current) {
       for (const inst of part.assignedInstruments) {
+        // If an instrument is queued for this upcoming loop boundary, let the queue processor start it
+        if ((inst as any).isLoading) continue
         if (this.removedInstanceIdsRef.current.has(inst.id)) continue
         const bufs = audioService.getBuffersFor(inst.id, tempo)
         if (!bufs) continue
@@ -98,9 +112,10 @@ export class AudioScheduler {
   // schedule next loop aligned to the loop we just started: next start = scheduleTime + loopDuration
   // Using transportStart-based loop grid here causes the very first loop to be one beat short when
   // the initial start happens at the next beat boundary; anchoring to scheduleTime fixes that.
-  const lead = 0.02
-  const loopT = scheduleTime + loopDuration(tempo) - lead
-  const nextDelayMs = Math.max(0, (loopT - ctx.currentTime) * 1000)
+  const early = 0.05
+  const nextLoopStart = scheduleTime + loopDuration(tempo)
+  const fireAt = nextLoopStart - early
+  const nextDelayMs = Math.max(0, (fireAt - ctx.currentTime) * 1000)
   this.loopTimer = setTimeout(() => this.scheduleLoopStartIfNeeded(), nextDelayMs)
   }
 
@@ -134,7 +149,7 @@ export class AudioScheduler {
         e2.loud!.push(scheduleTime)
   e2.beatIndex!.push(beatIndex)
       }
-      // flip isLoading off in UI when scheduled
+  // flip isLoading off in UI when scheduled; loop start will not schedule these because isLoading was true at scheduling time
       if (this.setPartsCb) {
         this.setPartsCb(prev => prev.map(p => ({
           ...p,
@@ -281,6 +296,14 @@ export class AudioScheduler {
     this.postSwitchBeatCorrection = Math.trunc(n)
   }
 
+  stop() {
+    if (this.loopTimer) {
+      clearTimeout(this.loopTimer)
+      this.loopTimer = null
+    }
+    this.hasStarted = false
+  }
+
   getPostSwitchBeatCorrection() {
     return this.postSwitchBeatCorrection
   }
@@ -292,10 +315,5 @@ export class AudioScheduler {
 
   getStartMode() { return this.startMode }
 
-  stop() {
-    if (this.loopTimer) {
-      clearTimeout(this.loopTimer)
-      this.loopTimer = null
-    }
-  }
+  // stop() is implemented above to also reset hasStarted
 }

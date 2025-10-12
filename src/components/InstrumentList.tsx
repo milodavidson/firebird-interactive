@@ -22,7 +22,7 @@ export default function InstrumentList() {
               }}
               onClick={() => setSelectedInstrument({ id: inst.id, name: inst.name })}
               aria-pressed={selectedInstrument?.id === inst.id}
-              className={`w-full rounded-md border px-3 py-2 text-left text-sm transition hover:bg-gray-50 ${selectedInstrument?.id === inst.id ? 'border-[var(--color-brand-navy)] ring-1 ring-[var(--color-brand-navy)]' : 'border-gray-300'}`}
+              className={`pressable w-full rounded-md border px-3 py-2 text-left text-sm transition hover:-translate-y-[1px] hover:bg-gray-50 hover:shadow-sm ${selectedInstrument?.id === inst.id ? 'border-[var(--color-brand-navy)] ring-1 ring-[var(--color-brand-navy)]' : 'border-gray-300'}`}
             >
               {inst.name}
             </button>

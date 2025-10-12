@@ -7,6 +7,7 @@ import { AudioScheduler } from '@/lib/audio/AudioScheduler'
 import { useSpaceToggle } from '@/hooks/useSpaceToggle'
 import LoopProgress from './LoopProgress'
 import { Eraser } from 'lucide-react'
+import * as Tooltip from '@radix-ui/react-tooltip'
 
 type Props = { scheduler?: AudioScheduler }
 
@@ -70,7 +71,19 @@ export default function PlayerControls({ scheduler }: Props = {}) {
           <option value="slow">Slow</option>
         </select>
       </div>
-      <button className="btn btn-outline" aria-label="Clear" onClick={onClear}><Eraser size={16} /></button>
+      <Tooltip.Provider>
+        <Tooltip.Root delayDuration={250}>
+          <Tooltip.Trigger asChild>
+            <button className="btn btn-outline pressable" aria-label="Clear" onClick={onClear}><Eraser size={16} /></button>
+          </Tooltip.Trigger>
+          <Tooltip.Portal>
+            <Tooltip.Content sideOffset={6} className="rounded bg-black/90 px-2 py-1 text-xs text-white shadow">
+              Clear
+              <Tooltip.Arrow className="fill-black/90" />
+            </Tooltip.Content>
+          </Tooltip.Portal>
+        </Tooltip.Root>
+      </Tooltip.Provider>
     </div>
   )
 }
