@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-brand-red: #e22237;
+  --color-brand-pink: #ffc2d1;
+  --color-brand-navy: #132067;
+}
+
+html, body, #__next {
+  height: 100%;
+}
+
+body {
+  background-color: #ffffff;
+  color: #0a0a0a;
+}
+
+.card {
+  @apply rounded-xl border border-gray-200 bg-white shadow-sm;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center rounded-md px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+}
+
+.btn-primary {
+  @apply bg-[var(--color-brand-navy)] text-white hover:bg-[#0f1a53] focus-visible:ring-[var(--color-brand-navy)];
+}
+
+.btn-outline {
+  @apply border border-gray-300 bg-white hover:bg-gray-50;
+}

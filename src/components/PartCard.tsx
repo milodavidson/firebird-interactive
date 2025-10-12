@@ -33,17 +33,16 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
           setSelectedInstrument(null)
         }
       }}
-      style={{ border: '1px solid #ddd', borderRadius: 8, padding: 12, opacity: atCapacity ? 0.6 : 1 }}
+      className={`rounded-lg border p-3 ${atCapacity ? 'opacity-60' : ''}`}
     >
-      <div style={{ fontWeight: 600, marginBottom: 8 }} data-testid={`part-${part.id}`}>{part.name} {atCapacity ? '(full)' : ''}</div>
+      <div className="mb-2 font-semibold" data-testid={`part-${part.id}`}>{part.name} {atCapacity ? '· full' : ''}</div>
       {part.assignedInstruments.length === 0 ? (
-        <div style={{ color: '#888' }}>Drop or tap to add</div>
+        <div className="text-sm text-gray-500">Drop or tap to add</div>
       ) : (
-        <ul style={{ margin: 0, paddingLeft: 16 }}>
+        <ul className="ml-4 list-disc">
           {part.assignedInstruments.map((inst) => (
-            <li key={inst.id} style={{ marginBottom: 8 }}>
+            <li key={inst.id} className="mb-2">
               <AssignedInstrument inst={inst} />
-              <button onClick={() => removeInstrument(inst.id)} aria-label={`Remove ${inst.name}`} style={{ marginTop: 4 }}>Remove</button>
             </li>
           ))}
         </ul>

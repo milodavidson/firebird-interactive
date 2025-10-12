@@ -10,9 +10,8 @@ export default function InstrumentList() {
 
   return (
     <div>
-      <h3>Instruments</h3>
-      <p style={{ color: '#777' }}>Drag to a part or tap to select, then tap a part.</p>
-      <ul style={{ margin: 0, paddingLeft: 16 }}>
+      <p className="text-xs text-gray-500">Drag to a part or tap to select, then tap a part.</p>
+      <ul className="mt-2 grid grid-cols-2 gap-2 md:block md:space-y-2">
         {INSTRUMENTS.map(inst => (
           <li key={inst.id}>
             <button
@@ -23,13 +22,7 @@ export default function InstrumentList() {
               }}
               onClick={() => setSelectedInstrument({ id: inst.id, name: inst.name })}
               aria-pressed={selectedInstrument?.id === inst.id}
-              style={{
-                border: selectedInstrument?.id === inst.id ? '2px solid #333' : '1px solid #ccc',
-                padding: '4px 8px',
-                borderRadius: 6,
-                background: '#fff',
-                cursor: 'pointer'
-              }}
+              className={`w-full rounded-md border px-3 py-2 text-left text-sm transition hover:bg-gray-50 ${selectedInstrument?.id === inst.id ? 'border-[var(--color-brand-navy)] ring-1 ring-[var(--color-brand-navy)]' : 'border-gray-300'}`}
             >
               {inst.name}
             </button>

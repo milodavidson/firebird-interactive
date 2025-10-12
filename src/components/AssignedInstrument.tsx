@@ -4,10 +4,13 @@ import { useEffect, useState } from 'react'
 import type { AssignedInstrument as AssignedInstrumentType } from '@/lib/types'
 import { audioService } from '@/lib/audio/AudioService'
 import { usePartsStore } from '@/hooks/usePartsStore'
+import { Headphones, Volume2, VolumeX, Trash2 } from 'lucide-react'
+import { useAssignments } from '@/hooks/useAssignments'
 
 export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentType }) {
   const { soloInstanceId, setParts, setSoloInstanceId, parts } = usePartsStore()
   const isSoloed = soloInstanceId === inst.id
+  const { removeInstrument } = useAssignments()
   // Keep base gains in sync with UI state (solo/mute/balance)
   useEffect(() => {
     const effectiveMuted = (soloInstanceId ? inst.id !== soloInstanceId : false) || inst.isMuted
@@ -37,6 +40,9 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
           }}
         />
         <button data-testid="solo-toggle"
+          aria-label={isSoloed ? 'Unsolo' : 'Solo'}
+          aria-pressed={isSoloed}
+          className={`btn ${isSoloed ? 'bg-[var(--color-brand-navy)] text-white border border-[var(--color-brand-navy)]' : 'btn-outline'}`}
           onClick={() => {
             const nextSolo = isSoloed ? null : inst.id
             setSoloInstanceId(nextSolo)
@@ -48,9 +54,12 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
             }
           }}
         >
-          {isSoloed ? 'Unsolo' : 'Solo'}
+          <Headphones size={16} />
         </button>
         <button data-testid="mute-toggle"
+          aria-label={inst.isMuted ? 'Unmute' : 'Mute'}
+          aria-pressed={inst.isMuted}
+          className={`btn ${inst.isMuted ? 'bg-[var(--color-brand-red)] text-white border border-[var(--color-brand-red)]' : 'btn-outline'}`}
           onClick={() => {
             const nextMuted = !inst.isMuted
             // Update state
@@ -64,7 +73,15 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
             }
           }}
         >
-          {inst.isMuted ? 'Unmute' : 'Mute'}
+          {inst.isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+        </button>
+        <button
+          aria-label={`Remove ${inst.name}`}
+          className="btn btn-outline"
+          title={`Remove ${inst.name}`}
+          onClick={() => removeInstrument(inst.id)}
+        >
+          <Trash2 size={16} />
         </button>
       </div>
     </div>

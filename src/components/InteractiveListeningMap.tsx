@@ -7,7 +7,7 @@ import InstrumentList from './InstrumentList'
 import { usePartsStore } from '@/hooks/usePartsStore'
 import { AudioScheduler } from '@/lib/audio/AudioScheduler'
 import { useAudioInspector } from '@/hooks/useAudioInspector'
-import BeatDebug from './BeatDebug'
+// import BeatDebug from './BeatDebug'
 
 export default function InteractiveListeningMap() {
   const store = usePartsStore()
@@ -28,16 +28,25 @@ export default function InteractiveListeningMap() {
   useAudioInspector(scheduler)
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '260px 1fr', gap: 16, padding: 16 }}>
-      <div>
-        <h1 style={{ margin: 0, fontSize: 20 }}>Interactive Listening Map</h1>
-        <p style={{ color: '#555' }}>Assign instruments to parts and play.</p>
-  <PlayerControls scheduler={scheduler} />
-        <InstrumentList />
-      </div>
-      <div>
-        <PartsGrid />
-        <BeatDebug scheduler={scheduler} />
+    <div className="mx-auto max-w-6xl p-4">
+      <header className="mb-4 flex items-center justify-between">
+        <div>
+          <h1 className="m-0 text-xl font-semibold text-[var(--color-brand-navy)]">Interactive Listening Map</h1>
+          <p className="text-sm text-gray-600">Assign instruments to parts and play.</p>
+        </div>
+        <PlayerControls scheduler={scheduler} />
+      </header>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[280px,1fr]">
+        <aside className="card p-4">
+          <h2 className="mb-2 text-sm font-semibold text-gray-700">Instruments</h2>
+          <InstrumentList />
+        </aside>
+        <main className="card p-4">
+          <PartsGrid />
+          {/* <div className="mt-4">
+            <BeatDebug scheduler={scheduler} />
+          </div> */}
+        </main>
       </div>
     </div>
   )

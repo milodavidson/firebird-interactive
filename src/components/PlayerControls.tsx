@@ -5,6 +5,8 @@ import { usePartsStore } from '@/hooks/usePartsStore'
 import { audioService } from '@/lib/audio/AudioService'
 import { AudioScheduler } from '@/lib/audio/AudioScheduler'
 import { useSpaceToggle } from '@/hooks/useSpaceToggle'
+import LoopProgress from './LoopProgress'
+import { Eraser } from 'lucide-react'
 
 type Props = { scheduler?: AudioScheduler }
 
@@ -21,6 +23,8 @@ export default function PlayerControls({ scheduler }: Props = {}) {
       if (scheduler) scheduler.scheduleLoopStartIfNeeded()
     } else {
       setPlay(false)
+      // Reset loop transport so progress ring returns to 0 on pause
+      transportStartRef.current = null
       audioService.stopAllActive(50)
       scheduler?.stop()
     }
@@ -57,16 +61,16 @@ export default function PlayerControls({ scheduler }: Props = {}) {
   )
 
   return (
-    <div style={{ display: 'flex', gap: 8, alignItems: 'center', margin: '8px 0' }}>
-      <button onClick={onToggle} aria-label={play ? 'Pause' : 'Play'}>{play ? 'Pause' : 'Play'}</button>
-      <label>
-        Tempo:
-        <select value={tempo} onChange={onTempoChange} aria-label="Tempo">
+    <div className="flex items-center gap-4 py-3">
+      <LoopProgress onToggle={onToggle} />
+      <div className="flex items-center gap-2">
+        <label className="text-sm font-medium text-gray-700" htmlFor="tempo">Tempo</label>
+        <select id="tempo" value={tempo} onChange={onTempoChange} aria-label="Tempo" className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm">
           <option value="fast">Fast</option>
           <option value="slow">Slow</option>
         </select>
-      </label>
-      <button onClick={onClear}>Clear</button>
+      </div>
+      <button className="btn btn-outline" aria-label="Clear" onClick={onClear}><Eraser size={16} /></button>
     </div>
   )
 }
