@@ -31,6 +31,7 @@ export default function InstrumentList() {
               onDragStart={e => {
                 e.dataTransfer.setData('text/instrumentId', inst.id)
                 e.dataTransfer.setData('text/instrumentName', inst.name)
+                try { e.dataTransfer.effectAllowed = 'move' } catch {}
               }}
               onClick={() => {
                 if (selectedInstrument?.id === inst.id) {

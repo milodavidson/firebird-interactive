@@ -5,6 +5,7 @@ import { useAssignments } from '@/hooks/useAssignments'
 import AssignedInstrument from '@/components/AssignedInstrument'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Music, Drum, Waves, Piano } from 'lucide-react'
+import { useRef } from 'react'
 
 export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'rhythm' | 'texture' }) {
   const { parts } = usePartsStore()
@@ -14,30 +15,43 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
   if (!part) return null
   const atCapacity = part.assignedInstruments.length >= 4
   const isEmpty = part.assignedInstruments.length === 0
+  const dragDepthRef = useRef(0)
   return (
     <motion.div
       layout
       transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.7 }}
       role="button"
       tabIndex={0}
-      onDragOver={e => e.preventDefault()}
       onDragOverCapture={e => {
+        // Capture-phase fallback so fast drags still show feedback
         const el = e.currentTarget as HTMLDivElement
-        el.classList.add('ring-2','ring-[var(--color-brand-navy)]','shadow-md')
+        el.classList.add('ring-2','ring-[var(--color-brand-navy)]','shadow-md','scale-[1.01]')
+      }}
+      onDragOver={e => {
+        e.preventDefault()
+        try { e.dataTransfer.dropEffect = 'move' } catch {}
+        const el = e.currentTarget as HTMLDivElement
+        el.classList.add('ring-2','ring-[var(--color-brand-navy)]','shadow-md','scale-[1.01]')
       }}
       onDragEnter={e => {
         const el = e.currentTarget as HTMLDivElement
-        el.classList.add('ring-2','ring-[var(--color-brand-navy)]','shadow-md')
+        try { e.dataTransfer.dropEffect = 'move' } catch {}
+        dragDepthRef.current += 1
+        el.classList.add('ring-2','ring-[var(--color-brand-navy)]','shadow-md','scale-[1.01]')
       }}
       onDragLeave={e => {
         const el = e.currentTarget as HTMLDivElement
-        el.classList.remove('ring-2','ring-[var(--color-brand-navy)]','shadow-md')
+        dragDepthRef.current = Math.max(0, dragDepthRef.current - 1)
+        if (dragDepthRef.current === 0) {
+          el.classList.remove('ring-2','ring-[var(--color-brand-navy)]','shadow-md','scale-[1.01]')
+        }
       }}
       onDrop={e => {
         const el = e.currentTarget as HTMLDivElement
         const instrumentId = e.dataTransfer.getData('text/instrumentId')
         const instrumentName = e.dataTransfer.getData('text/instrumentName')
-        el.classList.remove('ring-2','ring-[var(--color-brand-navy)]','shadow-md')
+        dragDepthRef.current = 0
+        el.classList.remove('ring-2','ring-[var(--color-brand-navy)]','shadow-md','scale-[1.01]')
         if (instrumentId) {
           // prevent duplicates and capacity
           if (part.assignedInstruments.some(ai => ai.instrumentId === instrumentId) || atCapacity) {
