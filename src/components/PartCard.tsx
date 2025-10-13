@@ -73,13 +73,13 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
       }}
   className={`rounded-lg border p-4 md:p-5 transition h-full flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-navy)] focus-visible:ring-offset-2`}
     >
-      <div className="mb-3 text-base md:text-lg font-semibold" data-testid={`part-${part.id}`}>
+      <div className="mb-2 text-base md:text-lg font-semibold" data-testid={`part-${part.id}`}>
         <span className="inline-flex items-center gap-2">
           <PartIcon partId={part.id} />
           <span>{part.name}</span>
         </span>
       </div>
-  <ul className="list-none pl-0 space-y-2.5 md:space-y-3 flex-1 overflow-auto min-h-0">
+  <ul className="list-none pl-0 space-y-2 md:space-y-2.5 flex-1 overflow-auto min-h-0">
         {/* Always mounted placeholder that fades/collapses when not empty */}
         <motion.li
           key="empty"

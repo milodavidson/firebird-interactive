@@ -34,7 +34,7 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
   }, [inst.isLoading, inst.name, play])
 
   return (
-  <div data-inst-id={inst.id} data-queued={!!inst.isLoading} className="relative flex flex-wrap xl:flex-nowrap items-center gap-x-1.5 lg:gap-x-1.5 gap-y-1 pt-2 pb-1">
+  <div data-inst-id={inst.id} data-queued={!!inst.isLoading} className="relative flex flex-wrap xl:flex-nowrap items-center gap-x-1.5 lg:gap-x-1.5 gap-y-1 pt-1.5 pb-0.5">
       {/* Screen reader only live region to announce when a queued instrument starts */}
       <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">{liveMsg}</div>
       <AnimatePresence initial={false}>
@@ -130,7 +130,7 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
       {/* Compact slider (wraps under on small screens) */}
       <input
         aria-label={`${inst.name} balance`}
-        className="order-last basis-full w-full xl:order-2 xl:basis-auto xl:w-auto xl:flex-1 ml-0 h-2 min-w-[80px] flex-1 range--pink"
+  className="order-last basis-full w-full xl:order-2 xl:basis-auto xl:w-auto xl:flex-1 ml-0 h-[7px] min-w-[80px] flex-1 range--pink"
         style={{ ['--range-progress' as any]: `${inst.volumeBalance}%` }}
         type="range"
         min={0}

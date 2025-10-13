@@ -84,7 +84,7 @@ export default function PlayerControls({ scheduler }: Props = {}) {
   }, [hasAnyInstruments, play, scheduler, setPlay, transportStartRef])
 
   return (
-    <div className="flex items-center gap-4 py-3">
+    <div className="flex items-center gap-4 py-2.5">
   <LoopProgress size={84} onToggle={onToggle} disabled={!hasAnyInstruments} />
       <div className="relative flex flex-col items-center gap-1 self-center -translate-y-2.5">
         <span id="tempo-label" className="text-sm font-medium text-gray-700 text-center">Tempo</span>
