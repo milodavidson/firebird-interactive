@@ -62,8 +62,8 @@ export default function PlayerControls({ scheduler }: Props = {}) {
   return (
     <div className="flex items-center gap-4 py-3">
       <LoopProgress size={84} onToggle={onToggle} />
-      <div className="flex flex-col items-start gap-1">
-        <span id="tempo-label" className="text-sm font-medium text-gray-700">Tempo</span>
+      <div className="relative flex flex-col items-center gap-1 self-center -translate-y-2.5">
+        <span id="tempo-label" className="text-sm font-medium text-gray-700 text-center">Tempo</span>
         <div
           role="group"
           aria-labelledby="tempo-label"

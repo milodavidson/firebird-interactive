@@ -1,5 +1,6 @@
-'use client'
+"use client"
 
+import { useEffect } from 'react'
 import { INSTRUMENTS } from '@/lib/instruments'
 import { usePartsStore } from '@/hooks/usePartsStore'
 import { useAssignments } from '@/hooks/useAssignments'
@@ -7,6 +8,17 @@ import { useAssignments } from '@/hooks/useAssignments'
 export default function InstrumentList() {
   const { selectedInstrument, setSelectedInstrument } = usePartsStore()
   const { addInstrument } = useAssignments()
+
+  // Clear selection with Escape
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' || e.code === 'Escape') {
+        setSelectedInstrument(null)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [setSelectedInstrument])
 
   return (
     <div className="flex flex-col">
@@ -20,7 +32,13 @@ export default function InstrumentList() {
                 e.dataTransfer.setData('text/instrumentId', inst.id)
                 e.dataTransfer.setData('text/instrumentName', inst.name)
               }}
-              onClick={() => setSelectedInstrument({ id: inst.id, name: inst.name })}
+              onClick={() => {
+                if (selectedInstrument?.id === inst.id) {
+                  setSelectedInstrument(null)
+                } else {
+                  setSelectedInstrument({ id: inst.id, name: inst.name })
+                }
+              }}
               aria-pressed={selectedInstrument?.id === inst.id}
               className={`pressable w-full rounded-lg border px-4 py-3 text-left text-sm md:text-base transition hover:-translate-y-[1px] hover:bg-gray-50 hover:shadow-sm ${selectedInstrument?.id === inst.id ? 'border-[var(--color-brand-navy)] ring-1 ring-[var(--color-brand-navy)]' : 'border-gray-300'}`}
             >

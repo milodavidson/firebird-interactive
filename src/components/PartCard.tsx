@@ -12,6 +12,7 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
   const part = parts.find((p) => p.id === partId)
   if (!part) return null
   const atCapacity = part.assignedInstruments.length >= 4
+  const isEmpty = part.assignedInstruments.length === 0
   return (
     <motion.div
       layout
@@ -64,33 +65,31 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
     >
       <div className="mb-3 text-base md:text-lg font-semibold" data-testid={`part-${part.id}`}>{part.name} {atCapacity ? '· full' : ''}</div>
   <ul className="list-none pl-0 space-y-2.5 md:space-y-3 flex-1 overflow-auto min-h-0">
-        <AnimatePresence initial={false} mode="wait">
-          {part.assignedInstruments.length === 0 ? (
+        {/* Always mounted placeholder that fades/collapses when not empty */}
+        <motion.li
+          key="empty"
+          initial={false}
+          animate={{ opacity: isEmpty ? 1 : 0, height: isEmpty ? 'auto' : 0, y: isEmpty ? 0 : -2 }}
+          transition={{ duration: 0.18, ease: 'easeOut' }}
+          style={{ overflow: 'hidden' }}
+          className={`text-sm text-gray-500 ${isEmpty ? '' : 'pointer-events-none'}`}
+        >
+          Drop or tap to add
+        </motion.li>
+        {/* Items animate independently; only removed item exits */}
+        <AnimatePresence initial={false} mode="sync">
+          {part.assignedInstruments.map((inst) => (
             <motion.li
-              key="empty"
-              layout
-              initial={{ opacity: 0, y: -4 }}
+              key={inst.id}
+              layout="position"
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 4 }}
-              transition={{ type: 'tween', duration: 0.15 }}
-              className="text-sm text-gray-500"
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 28, mass: 0.6 }}
             >
-              Drop or tap to add
+              <AssignedInstrument inst={inst} />
             </motion.li>
-          ) : (
-            part.assignedInstruments.map((inst) => (
-              <motion.li
-                key={inst.id}
-                layout
-                initial={{ opacity: 0, y: 6, backgroundColor: 'rgba(255, 255, 255, 0)' }}
-                animate={{ opacity: 1, y: 0, backgroundColor: 'rgba(255, 255, 255, 0)' }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 28, mass: 0.6 }}
-              >
-                <AssignedInstrument inst={inst} />
-              </motion.li>
-            ))
-          )}
+          ))}
         </AnimatePresence>
       </ul>
     </motion.div>
