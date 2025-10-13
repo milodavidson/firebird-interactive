@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Check, X, Minus } from 'lucide-react'
 import { usePartsStore } from '@/hooks/usePartsStore'
+import { INSTRUMENTS } from '@/lib/instruments'
 
 type PartId = 'melody' | 'harmony' | 'rhythm' | 'texture'
 
@@ -32,6 +33,7 @@ export default function FirebirdProgressChip() {
 
     // Details for checklist
     const presenceDetails: { part: PartId; inst: string; status: 'missing' | 'present-not-loud' | 'loud' }[] = []
+    const extrasByPart: Record<PartId, string[]> = { melody: [], harmony: [], rhythm: [], texture: [] }
     for (const pid of partIds) {
       const required = FIREBIRD_REQ[pid]
       const part = parts.find(p => p.id === pid)
@@ -50,14 +52,23 @@ export default function FirebirdProgressChip() {
           presenceDetails.push({ part: pid, inst, status: 'present-not-loud' })
         }
       }
+      // collect extras: instruments assigned to this part that are not in the required list
+      const assigned = part?.assignedInstruments || []
+      const extras = assigned
+        .map(ai => ai.instrumentId)
+        .filter(id => !required.includes(id))
+      // de-duplicate extras per part
+      extrasByPart[pid] = Array.from(new Set(extras))
     }
     const tempoOk = tempo === 'fast'
     const anyAssigned = parts.some(p => p.assignedInstruments.length > 0)
     const points = presentCount + loudCount + (tempoOk && anyAssigned ? 1 : 0)
     const totalPoints = requiredTotal * 2 + 1 // 19
     const percent = Math.round((points / totalPoints) * 100)
-    return { percent, points, totalPoints, presentCount, loudCount, requiredTotal, tempoOk, presenceDetails }
+    return { percent, points, totalPoints, presentCount, loudCount, requiredTotal, tempoOk, presenceDetails, extrasByPart }
   }, [parts, tempo])
+  
+  const nameById = useMemo(() => Object.fromEntries(INSTRUMENTS.map(i => [i.id, i.name])), []) as Record<string, string>
 
   // Trigger shimmer on reaching 100%
   const prevPercent = useRef<number>(0)
@@ -146,27 +157,44 @@ export default function FirebirdProgressChip() {
         <div
           role="dialog"
           aria-label="Firebird checklist"
-          className="absolute z-20 -translate-x-1/2 mt-3 w-64 md:w-72 rounded-lg border border-gray-200 bg-white shadow-lg p-3 text-sm text-center"
+          className="absolute z-20 -translate-x-1/2 mt-3 w-64 md:w-72 rounded-lg border border-gray-200 bg-white shadow-lg p-3 text-sm"
           style={{ left: anchorLeft != null ? `${anchorLeft}px` : '50%', top: '100%' }}
         >
-          <div className="font-semibold mb-1"> <em>Firebird</em> checklist</div>
-          <ul className="space-y-1">
-            <li className="flex items-center justify-center gap-2">
+          <div className="font-semibold mb-1 text-center"> <em>Firebird</em> checklist</div>
+          <ul className="space-y-1 text-left inline-block">
+            <li className="flex items-center gap-2">
               {data.tempoOk ? <Check size={14} /> : <X size={14} />}
-              <span>Tempo: Fast</span>
+              <span className="capitalize min-w-[4.5rem]">Tempo:</span>
+              <span>Fast</span>
             </li>
           </ul>
-          <div className="mt-2 font-semibold">Parts</div>
+          <div className="mt-2 font-semibold text-center">Parts</div>
           <ul className="mt-1 space-y-1 text-left inline-block">
             {data.presenceDetails.map((d, i) => (
               <li key={`${d.part}-${d.inst}-${i}`} className="flex items-center gap-2">
                 {d.status === 'loud' ? <Check size={14} /> : d.status === 'present-not-loud' ? <Minus size={14} /> : <X size={14} />}
-                <span className="capitalize">{d.part}:</span>
-                <span>{d.inst}</span>
+                <span className="capitalize min-w-[4.5rem]">{d.part}:</span>
+                <span className="capitalize">{nameById[d.inst] || d.inst}</span>
                 {d.status === 'present-not-loud' && <span className="text-gray-500">(make it loud!)</span>}
               </li>
             ))}
           </ul>
+          {/* Extras section per part, shown only if there are any extras */}
+          {(['melody','harmony','rhythm','texture'] as PartId[]).some(p => (data.extrasByPart[p] || []).length > 0) && (
+            <div className="mt-3">
+              <div className="font-semibold mb-1">Extras (don’t affect score)</div>
+              <ul className="space-y-1 text-left inline-block text-gray-600">
+                {(['melody','harmony','rhythm','texture'] as PartId[]).map(p => (
+                  (data.extrasByPart[p] || []).length > 0 ? (
+                    <li key={`extras-${p}`} className="flex items-start gap-2">
+                      <span className="capitalize min-w-[4.5rem]">{p}:</span>
+                      <span className="capitalize">{data.extrasByPart[p].map(id => nameById[id] || id).join(', ')}</span>
+                    </li>
+                  ) : null
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
     </div>
