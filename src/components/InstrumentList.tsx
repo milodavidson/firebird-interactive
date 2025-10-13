@@ -40,7 +40,7 @@ export default function InstrumentList() {
                 }
               }}
               aria-pressed={selectedInstrument?.id === inst.id}
-              className={`pressable w-full rounded-lg border px-4 py-3 text-left text-sm md:text-base transition hover:-translate-y-[1px] hover:bg-gray-50 hover:shadow-sm ${selectedInstrument?.id === inst.id ? 'border-[var(--color-brand-navy)] ring-1 ring-[var(--color-brand-navy)]' : 'border-gray-300'}`}
+              className={`pressable w-full rounded-lg border px-4 py-3 text-left text-sm md:text-base transition hover:-translate-y-[1px] hover:bg-gray-50 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-brand-navy)] ${selectedInstrument?.id === inst.id ? 'border-[var(--color-brand-navy)] ring-1 ring-[var(--color-brand-navy)]' : 'border-gray-300'}`}
             >
               <span className="flex items-center gap-2">
                 <InstrumentFamilyIconInline id={inst.id} name={inst.name} />

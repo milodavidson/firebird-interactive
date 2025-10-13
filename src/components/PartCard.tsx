@@ -18,6 +18,8 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
     <motion.div
       layout
       transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.7 }}
+      role="button"
+      tabIndex={0}
       onDragOver={e => e.preventDefault()}
       onDragOverCapture={e => {
         const el = e.currentTarget as HTMLDivElement
@@ -62,7 +64,14 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
           setSelectedInstrument(null)
         }
       }}
-  className={`rounded-lg border p-4 md:p-5 transition h-full flex flex-col`}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          const el = e.currentTarget as HTMLDivElement
+          el.click()
+        }
+      }}
+  className={`rounded-lg border p-4 md:p-5 transition h-full flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-navy)] focus-visible:ring-offset-2`}
     >
       <div className="mb-3 text-base md:text-lg font-semibold" data-testid={`part-${part.id}`}>
         <span className="inline-flex items-center gap-2">
@@ -78,7 +87,7 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
           animate={{ opacity: isEmpty ? 1 : 0, height: isEmpty ? 'auto' : 0, y: isEmpty ? 0 : -2 }}
           transition={{ duration: 0.18, ease: 'easeOut' }}
           style={{ overflow: 'hidden' }}
-          className={`text-sm text-gray-500 ${isEmpty ? '' : 'pointer-events-none'}`}
+          className={`text-sm text-gray-600 ${isEmpty ? '' : 'pointer-events-none'}`}
         >
           Drop or tap to add
         </motion.li>

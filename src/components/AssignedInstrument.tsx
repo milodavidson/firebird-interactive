@@ -13,14 +13,30 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
   const { soloInstanceId, setParts, setSoloInstanceId, parts, play } = usePartsStore()
   const isSoloed = soloInstanceId === inst.id
   const { removeInstrument } = useAssignments()
+  const [liveMsg, setLiveMsg] = useState<string>('')
+  const prevLoadingRef = useRef<boolean>(!!inst.isLoading)
   // Keep base gains in sync with UI state (solo/mute/balance)
   useEffect(() => {
     const effectiveMuted = (soloInstanceId ? inst.id !== soloInstanceId : false) || inst.isMuted
     audioService.setBaseGainValues(inst.id, inst.volumeBalance, effectiveMuted)
   }, [soloInstanceId, inst.id, inst.isMuted, inst.volumeBalance])
 
+  // Announce when a queued instrument begins playback at the loop start
+  useEffect(() => {
+    const wasLoading = prevLoadingRef.current
+    const isLoadingNow = !!inst.isLoading
+    if (wasLoading && !isLoadingNow && play) {
+      setLiveMsg(`${inst.name} started`)
+      const t = setTimeout(() => setLiveMsg(''), 1500)
+      return () => clearTimeout(t)
+    }
+    prevLoadingRef.current = isLoadingNow
+  }, [inst.isLoading, inst.name, play])
+
   return (
   <div data-inst-id={inst.id} data-queued={!!inst.isLoading} className="relative flex flex-wrap xl:flex-nowrap items-center gap-x-1.5 lg:gap-x-1.5 gap-y-1 pt-2 pb-1">
+      {/* Screen reader only live region to announce when a queued instrument starts */}
+      <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">{liveMsg}</div>
       <AnimatePresence initial={false}>
         {play && inst.isLoading && inst.queueScheduleTime != null && inst.queueStartTime != null && (
           <QueuedStrip key={`queued-${inst.id}`} scheduleTime={inst.queueScheduleTime} startTime={inst.queueStartTime} />

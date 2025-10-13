@@ -55,6 +55,10 @@ body {
   animation: shimmer 700ms ease-out forwards;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .shimmer:before { animation: none !important; }
+}
+
 /* Input range minimal styling */
 input[type="range"] {
   accent-color: var(--color-brand-navy);
