@@ -60,10 +60,10 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
           setSelectedInstrument(null)
         }
       }}
-      className={`rounded-lg border p-3 transition ${atCapacity ? 'opacity-60' : ''}`}
+      className={`rounded-lg border p-4 md:p-5 transition h-full flex flex-col ${atCapacity ? 'opacity-60' : ''}`}
     >
-      <div className="mb-2 font-semibold" data-testid={`part-${part.id}`}>{part.name} {atCapacity ? '· full' : ''}</div>
-      <ul className="list-none pl-0 space-y-2">
+      <div className="mb-3 text-base md:text-lg font-semibold" data-testid={`part-${part.id}`}>{part.name} {atCapacity ? '· full' : ''}</div>
+  <ul className="list-none pl-0 space-y-2.5 md:space-y-3 flex-1 overflow-auto min-h-0">
         <AnimatePresence initial={false} mode="wait">
           {part.assignedInstruments.length === 0 ? (
             <motion.li

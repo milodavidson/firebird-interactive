@@ -28,21 +28,23 @@ export default function InteractiveListeningMap() {
   useAudioInspector(scheduler)
 
   return (
-    <div className="mx-auto max-w-6xl p-4">
-      <header className="mb-4 flex items-center justify-between">
+    <div className="mx-auto max-w-6xl p-4 min-h-svh flex flex-col">
+      <header className="mb-4 flex items-center justify-between shrink-0">
         <div>
           <h1 className="m-0 text-xl font-semibold text-[var(--color-brand-navy)]">Interactive Listening Map</h1>
           <p className="text-sm text-gray-600">Assign instruments to parts and play.</p>
         </div>
         <PlayerControls scheduler={scheduler} />
       </header>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-[280px,1fr]">
-        <aside className="card p-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[320px,1fr] flex-1 min-h-0">
+        <aside className="card p-4 h-full">
           <h2 className="mb-2 text-sm font-semibold text-gray-700">Instruments</h2>
           <InstrumentList />
         </aside>
-        <main className="card p-4">
-          <PartsGrid />
+        <main className="card p-4 h-full overflow-auto min-h-0">
+          <div className="h-full min-h-0">
+            <PartsGrid />
+          </div>
           {/* <div className="mt-4">
             <BeatDebug scheduler={scheduler} />
           </div> */}

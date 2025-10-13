@@ -67,11 +67,12 @@ export function LoopProgress({ size = 72, stroke = 6, onToggle }: Props) {
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke={strokeColor}
           strokeWidth={stroke}
           strokeDasharray={circumference}
           strokeDashoffset={dashOffset}
           strokeLinecap="round"
+          className="transition-[stroke] duration-[250ms] ease-linear"
+          style={{ stroke: strokeColor }}
         />
       </svg>
       <span className="absolute inset-0 grid place-items-center">

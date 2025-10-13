@@ -6,9 +6,9 @@ import PartCard from '@/components/PartCard'
 export default function PartsGrid() {
   const { parts } = usePartsStore()
   return (
-    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+  <div className="grid h-full min-h-0 grid-cols-1 gap-3 lg:grid-cols-2 auto-rows-fr">
       {parts.map((p) => (
-        <PartCard key={p.id} partId={p.id} />
+        <div key={p.id} className="h-full"><PartCard partId={p.id} /></div>
       ))}
     </div>
   )

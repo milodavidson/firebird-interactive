@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import type { AssignedInstrument as AssignedInstrumentType } from '@/lib/types'
 import { audioService } from '@/lib/audio/AudioService'
 import { usePartsStore } from '@/hooks/usePartsStore'
@@ -19,29 +19,17 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
   }, [soloInstanceId, inst.id, inst.isMuted, inst.volumeBalance])
 
   return (
-    <div data-inst-id={inst.id} data-queued={!!inst.isLoading}>
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="truncate" data-testid="inst-name">{inst.name} {inst.hasError ? '(File missing)' : ''}</span>
-        {inst.isLoading && inst.queueScheduleTime != null && inst.queueStartTime != null && (
-          <QueuedProgress scheduleTime={inst.queueScheduleTime} startTime={inst.queueStartTime} />
-        )}
+  <div data-inst-id={inst.id} data-queued={!!inst.isLoading} className="relative flex flex-wrap xl:flex-nowrap items-center gap-x-1.5 lg:gap-x-2 gap-y-1 pt-2 pb-1">
+      {inst.isLoading && inst.queueScheduleTime != null && inst.queueStartTime != null && (
+        <QueuedStrip scheduleTime={inst.queueScheduleTime} startTime={inst.queueStartTime} />
+      )}
+      {/* Icon/name block */}
+      <div className="flex min-w-0 items-center gap-2 order-1">
+        <InstrumentFamilyIcon instrumentId={inst.instrumentId} />
+        <span className="sr-only" data-testid="inst-name">{inst.name}{inst.hasError ? ' (File missing)' : ''}</span>
       </div>
-      <div className="mt-1 flex flex-wrap items-center gap-2">
-        <label className="shrink-0 text-[12px]">Balance</label>
-        <input
-          className="min-w-[140px] max-w-full flex-1"
-          type="range"
-          min={0}
-          max={100}
-          value={inst.volumeBalance}
-          onChange={e => {
-            const val = Number(e.target.value)
-            const effectiveMuted = (soloInstanceId ? inst.id !== soloInstanceId : false) || inst.isMuted
-            audioService.setBaseGainValues(inst.id, val, effectiveMuted)
-            setParts(prev => prev.map(p => ({ ...p, assignedInstruments: p.assignedInstruments.map(ai => (ai.id === inst.id ? { ...ai, volumeBalance: val } : ai)) })))
-          }}
-        />
-        <div className="ml-auto flex items-center gap-2 shrink-0">
+      {/* Controls block */}
+      <div className="ml-auto flex items-center gap-1 md:gap-1.5 shrink-0 order-2 lg:order-3">
         <Tooltip.Provider>
           <Tooltip.Root delayDuration={250}>
             <Tooltip.Trigger asChild>
@@ -49,7 +37,7 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
                 data-testid="solo-toggle"
                 aria-label={isSoloed ? 'Unsolo' : 'Solo'}
                 aria-pressed={isSoloed}
-                className={`btn pressable px-2 py-1.5 text-xs md:px-3 md:py-2 md:text-sm ${isSoloed ? 'bg-[var(--color-brand-navy)] text-white border border-[var(--color-brand-navy)]' : 'btn-outline'}`}
+                className={`btn pressable px-1.5 py-1 text-[11px] md:px-2.5 md:py-1.5 md:text-sm ${isSoloed ? 'bg-[var(--color-brand-navy)] text-white border border-[var(--color-brand-navy)]' : 'btn-outline'}`}
                 onClick={() => {
                   const nextSolo = isSoloed ? null : inst.id
                   setSoloInstanceId(nextSolo)
@@ -61,7 +49,7 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
                   }
                 }}
               >
-                <Headphones size={16} />
+                <Headphones size={14} />
               </button>
             </Tooltip.Trigger>
             <Tooltip.Portal>
@@ -77,7 +65,7 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
                 data-testid="mute-toggle"
                 aria-label={inst.isMuted ? 'Unmute' : 'Mute'}
                 aria-pressed={inst.isMuted}
-                className={`btn pressable px-2 py-1.5 text-xs md:px-3 md:py-2 md:text-sm ${inst.isMuted ? 'bg-[var(--color-brand-red)] text-white border border-[var(--color-brand-red)]' : 'btn-outline'}`}
+                className={`btn pressable px-1.5 py-1 text-[11px] md:px-2.5 md:py-1.5 md:text-sm ${inst.isMuted ? 'bg-[var(--color-brand-red)] text-white border border-[var(--color-brand-red)]' : 'btn-outline'}`}
                 onClick={() => {
                   const nextMuted = !inst.isMuted
                   // Update state
@@ -91,7 +79,7 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
                   }
                 }}
               >
-                {inst.isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                {inst.isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
               </button>
             </Tooltip.Trigger>
             <Tooltip.Portal>
@@ -105,10 +93,10 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
             <Tooltip.Trigger asChild>
               <button
                 aria-label={`Remove ${inst.name}`}
-                className="btn btn-outline pressable px-2 py-1.5 text-xs md:px-3 md:py-2 md:text-sm"
+                className="btn btn-outline pressable px-1.5 py-1 text-[11px] md:px-2.5 md:py-1.5 md:text-sm"
                 onClick={() => removeInstrument(inst.id)}
               >
-                <Trash2 size={16} />
+                <Trash2 size={14} />
               </button>
             </Tooltip.Trigger>
             <Tooltip.Portal>
@@ -119,36 +107,113 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
             </Tooltip.Portal>
           </Tooltip.Root>
         </Tooltip.Provider>
-        </div>
       </div>
+      {/* Compact slider (wraps under on small screens) */}
+      <input
+        aria-label={`${inst.name} balance`}
+  className="order-last basis-full w-full xl:order-2 xl:basis-auto xl:w-auto ml-0 xl:ml-2 h-2 min-w-[80px] flex-1 xl:min-w-[140px] xl:max-w-[200px]"
+        type="range"
+        min={0}
+        max={100}
+        value={inst.volumeBalance}
+        onChange={e => {
+          const val = Number(e.target.value)
+          const effectiveMuted = (soloInstanceId ? inst.id !== soloInstanceId : false) || inst.isMuted
+          audioService.setBaseGainValues(inst.id, val, effectiveMuted)
+          setParts(prev => prev.map(p => ({ ...p, assignedInstruments: p.assignedInstruments.map(ai => (ai.id === inst.id ? { ...ai, volumeBalance: val } : ai)) })))
+        }}
+      />
     </div>
   )
 }
 
-function QueuedProgress({ scheduleTime, startTime }: { scheduleTime: number; startTime: number }) {
-  const [pct, setPct] = useState(0)
+function InstrumentFamilyIcon({ instrumentId }: { instrumentId: string }) {
+  let src = ''
+  let alt = ''
+  switch (instrumentId) {
+    case 'woodwind':
+      src = '/icons/woodwind.png'; alt = 'Flute icon'; break
+    case 'brass':
+      src = '/icons/brass.png'; alt = 'Horn icon'; break
+    case 'percussion':
+      src = '/icons/percussion.png'; alt = 'Percussion icon'; break
+    case 'strings':
+      src = '/icons/strings.png'; alt = 'Violin icon'; break
+    default:
+      return null
+  }
+  return <img src={src} alt={alt} className="h-6 w-auto min-w-[24px] max-w-none select-none shrink-0 flex-none object-contain" draggable={false} />
+}
+
+function QueuedProgress({ scheduleTime, startTime, small }: { scheduleTime: number; startTime: number; small?: boolean }) {
+  const [p, setP] = useState(0)
   useEffect(() => {
     let raf = 0
     const tick = () => {
       const ctx = audioService.audioCtx
       if (!ctx) {
-        setPct(0)
+        setP(0)
         raf = requestAnimationFrame(tick)
         return
       }
       const now = ctx.currentTime
       const total = Math.max(0.001, scheduleTime - startTime)
       const elapsed = Math.max(0, now - startTime)
-      const p = Math.min(1, elapsed / total)
-      setPct(Math.round(p * 100))
-      if (p < 1) raf = requestAnimationFrame(tick)
+      const next = Math.min(1, elapsed / total)
+      setP(next)
+      if (next < 1) raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
   }, [scheduleTime, startTime])
+  const style = small ? { width: 44, height: 6 } : { width: 60, height: 6 }
   return (
-    <span aria-label="Queued" title="Queued" data-testid="queued-progress" className="relative inline-block overflow-hidden rounded bg-gray-200" style={{ width: 60, height: 6 }}>
-      <span className="block h-full bg-gray-500" style={{ width: `${pct}%` }} />
+    <span aria-label="Queued" title="Queued" data-testid="queued-progress" className="relative inline-block overflow-hidden rounded bg-gray-200" style={style}>
+      <span className="block h-full bg-gray-500 transition-[width] duration-75" style={{ width: `${p * 100}%` }} />
+      <span className="absolute inset-0 shimmer" aria-hidden="true" />
+    </span>
+  )
+}
+
+// Thin, unobtrusive progress strip positioned at the top edge of the row
+function QueuedStrip({ scheduleTime, startTime }: { scheduleTime: number; startTime: number }) {
+  const fillRef = useRef<HTMLSpanElement | null>(null)
+  useEffect(() => {
+    const ctx = audioService.audioCtx
+    const now = ctx ? ctx.currentTime : 0
+    const total = Math.max(0.001, scheduleTime - startTime)
+    const elapsed = Math.max(0, now - startTime)
+    const p0 = Math.min(1, elapsed / total)
+    const remaining = Math.max(0, scheduleTime - now)
+
+    const el = fillRef.current
+    if (!el) return
+
+    // Initialize at current progress, then animate to full over remaining time.
+    el.style.transformOrigin = 'left'
+    el.style.transition = 'none'
+    el.style.transform = `scaleX(${p0})`
+
+    const id = requestAnimationFrame(() => {
+      const el2 = fillRef.current
+      if (!el2) return
+      if (remaining <= 0) {
+        el2.style.transform = 'scaleX(1)'
+        el2.style.transition = 'none'
+        return
+      }
+      el2.style.transition = `transform ${remaining}s linear`
+      el2.style.transform = 'scaleX(1)'
+    })
+    return () => cancelAnimationFrame(id)
+  }, [scheduleTime, startTime])
+  return (
+    <span
+      aria-label="Queued"
+      title="Queued"
+      className="pointer-events-none absolute left-0 right-0 top-0 h-[2px] overflow-hidden rounded-full bg-gray-200"
+    >
+      <span ref={fillRef} className="absolute inset-y-0 left-0 w-full bg-gray-500 shadow-[0_0_8px_rgba(19,32,103,0.35)] will-change-transform" style={{ transform: 'scaleX(0)' }} />
       <span className="absolute inset-0 shimmer" aria-hidden="true" />
     </span>
   )
