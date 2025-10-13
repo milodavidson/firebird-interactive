@@ -7,6 +7,7 @@ import InstrumentList from './InstrumentList'
 import { usePartsStore } from '@/hooks/usePartsStore'
 import { AudioScheduler } from '@/lib/audio/AudioScheduler'
 import { useAudioInspector } from '@/hooks/useAudioInspector'
+import FirebirdProgressChip from './FirebirdProgressChip'
 // import BeatDebug from './BeatDebug'
 
 export default function InteractiveListeningMap() {
@@ -29,12 +30,22 @@ export default function InteractiveListeningMap() {
 
   return (
     <div className="mx-auto max-w-6xl p-4 min-h-svh flex flex-col">
-      <header className="mb-4 flex items-center justify-between shrink-0">
-        <div>
-          <h1 className="m-0 text-xl font-semibold text-[var(--color-brand-navy)]">Orchestra Sandbox</h1>
-          <p className="text-sm text-gray-600">Build parts, mix, and play.</p>
+  <header className="mb-4 grid items-center gap-2 md:gap-3 grid-cols-[1fr_auto] md:grid-cols-[auto,1fr,auto] xl:grid-cols-[auto,1fr,auto]">
+  {/* Row 1: Title only on mobile (hide description), centered on mobile */}
+  <div className="justify-self-center md:justify-self-start col-start-1 col-end-2 row-start-1 min-w-0">
+          <div className="min-w-0">
+            <h1 className="m-0 text-sm sm:text-lg leading-tight font-semibold text-[var(--color-brand-navy)] truncate">Orchestra Sandbox</h1>
+            <p className="hidden sm:block text-[11px] sm:text-sm leading-snug text-gray-600 overflow-hidden text-ellipsis">Build parts, mix, and play.</p>
+          </div>
         </div>
-        <PlayerControls scheduler={scheduler} />
+        {/* Row 2: Chip centered on mobile; center column on md+ */}
+        <div className="col-span-2 row-start-2 md:row-auto md:col-span-1 md:col-start-2 md:col-end-3 w-full flex justify-center md:block md:justify-self-stretch">
+          <FirebirdProgressChip />
+        </div>
+        {/* Row 3: Controls centered on mobile; right column on md+ */}
+        <div className="col-span-2 row-start-3 md:row-auto md:col-span-1 md:col-start-3 md:col-end-4 justify-self-center md:justify-self-end mt-[10px] sm:mt-[10px] md:mt-0 mb-[-10px] sm:mb-[-10px] md:mb-0">
+          <PlayerControls scheduler={scheduler} />
+        </div>
       </header>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-[320px,1fr] flex-1 min-h-0">
         <aside className="card p-4 h-full">

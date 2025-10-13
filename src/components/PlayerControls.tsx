@@ -84,15 +84,14 @@ export default function PlayerControls({ scheduler }: Props = {}) {
   }, [hasAnyInstruments, play, scheduler, setPlay, transportStartRef])
 
   return (
-    <div className="flex items-center gap-4 py-2.5">
-  <LoopProgress size={84} onToggle={onToggle} disabled={!hasAnyInstruments} />
-      <div className="relative flex flex-col items-center gap-1 self-center -translate-y-2.5">
-        <span id="tempo-label" className="text-sm font-medium text-gray-700 text-center">Tempo</span>
+    <div className="grid grid-cols-[auto,1fr,auto] items-center w-full md:w-auto gap-2 sm:gap-3 md:gap-4 py-2">
+      <div className="justify-self-center md:justify-self-start translate-y-[4px]">
+        <LoopProgress size={56} onToggle={onToggle} disabled={!hasAnyInstruments} />
+      </div>
+      <div className="flex items-center justify-center">
         <div
           role="group"
-          aria-labelledby="tempo-label"
-          className="relative grid grid-cols-2 rounded-full border border-gray-300 bg-gray-100 overflow-hidden"
-          style={{ minWidth: 160 }}
+          className="relative grid grid-cols-2 h-10 rounded-full border border-gray-300 bg-gray-100 overflow-hidden w-full min-w-0 max-w-[220px] sm:max-w-[240px]"
         >
           <span
             aria-hidden="true"
@@ -107,7 +106,7 @@ export default function PlayerControls({ scheduler }: Props = {}) {
             type="button"
             data-testid="tempo-fast"
             aria-pressed={tempo === 'fast'}
-            className={`relative z-10 px-3 py-1.5 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${tempo === 'fast' ? 'text-white' : 'text-gray-800'}`}
+            className={`relative z-10 h-full px-3 text-[13px] sm:text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 flex items-center justify-center ${tempo === 'fast' ? 'text-white' : 'text-gray-800'}`}
             onClick={() => setTempoValue(tempo === 'fast' ? 'slow' : 'fast')}
           >
             Fast
@@ -116,26 +115,28 @@ export default function PlayerControls({ scheduler }: Props = {}) {
             type="button"
             data-testid="tempo-slow"
             aria-pressed={tempo === 'slow'}
-            className={`relative z-10 px-3 py-1.5 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${tempo === 'slow' ? 'text-white' : 'text-gray-800'}`}
+            className={`relative z-10 h-full px-3 text-[13px] sm:text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 flex items-center justify-center ${tempo === 'slow' ? 'text-white' : 'text-gray-800'}`}
             onClick={() => setTempoValue(tempo === 'slow' ? 'fast' : 'slow')}
           >
             Slow
           </button>
         </div>
       </div>
-      <Tooltip.Provider>
-        <Tooltip.Root delayDuration={250}>
-          <Tooltip.Trigger asChild>
-            <button className="btn btn-outline pressable" aria-label="Clear" onClick={onClear}><Eraser size={16} /></button>
-          </Tooltip.Trigger>
-          <Tooltip.Portal>
-            <Tooltip.Content sideOffset={6} className="rounded bg-black/90 px-2 py-1 text-xs text-white shadow">
-              Clear
-              <Tooltip.Arrow className="fill-black/90" />
-            </Tooltip.Content>
-          </Tooltip.Portal>
-        </Tooltip.Root>
-      </Tooltip.Provider>
+      <div className="justify-self-center md:justify-self-end">
+        <Tooltip.Provider>
+          <Tooltip.Root delayDuration={250}>
+            <Tooltip.Trigger asChild>
+              <button className="btn btn-outline pressable h-10 w-10 p-0" aria-label="Clear" onClick={onClear}><Eraser size={16} /></button>
+            </Tooltip.Trigger>
+            <Tooltip.Portal>
+              <Tooltip.Content sideOffset={6} className="rounded bg-black/90 px-2 py-1 text-xs text-white shadow">
+                Clear
+                <Tooltip.Arrow className="fill-black/90" />
+              </Tooltip.Content>
+            </Tooltip.Portal>
+          </Tooltip.Root>
+        </Tooltip.Provider>
+      </div>
     </div>
   )
 }

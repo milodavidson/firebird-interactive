@@ -39,6 +39,10 @@ body {
     transition: transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease, color 150ms ease, border-color 150ms ease;
   }
   .pressable:active { transform: scale(0.97); }
+  /* Glow pulse for completion */
+  @keyframes glowPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(226,34,55,0.0) } 50% { box-shadow: 0 0 0 6px rgba(226,34,55,0.25) } }
+  .glow-pulse { animation: glowPulse 1200ms ease-out 1; }
+  /* (removed) shimmer animation for progress bar */
 }
 
 /* Denial shake */
@@ -58,6 +62,16 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .shimmer:before { animation: none !important; }
 }
+
+/* Simple confetti container hook (can be enhanced later) */
+.confetti-wrap::before, .confetti-wrap::after {
+  content: '';
+  position: absolute;
+  width: 6px; height: 6px; border-radius: 1px;
+  background: var(--color-brand-red);
+  transform: translateY(-4px) rotate(15deg);
+}
+.confetti-wrap::after { left: -10px; background: var(--color-brand-navy); transform: translateY(-6px) rotate(-12deg); }
 
 /* Input range minimal styling */
 input[type="range"] {

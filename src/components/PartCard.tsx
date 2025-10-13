@@ -85,7 +85,7 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
           el.click()
         }
       }}
-  className={`rounded-lg border p-4 md:p-5 transition h-full flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-navy)] focus-visible:ring-offset-2`}
+  className={`rounded-lg border p-4 md:p-5 transition h-auto lg:h-full flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-navy)] focus-visible:ring-offset-2`}
     >
       <div className="mb-2 text-base md:text-lg font-semibold" data-testid={`part-${part.id}`}>
         <span className="inline-flex items-center gap-2">
