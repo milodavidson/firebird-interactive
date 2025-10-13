@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { useCallback, useEffect } from 'react'
 import { usePartsStore } from '@/hooks/usePartsStore'
@@ -49,10 +49,8 @@ export default function PlayerControls({ scheduler }: Props = {}) {
     ])
   }, [setPlay, transportStartRef, currentTempoRef, deferredQueueRef, setParts])
 
-  const onTempoChange = useCallback(
-    async (e: React.ChangeEvent<HTMLSelectElement>) => {
-      const t = e.target.value as 'fast' | 'slow'
-      // Update UI selection immediately, but do not mutate currentTempoRef when playing.
+  const setTempoValue = useCallback(
+    async (t: 'fast' | 'slow') => {
       setTempo(t)
       if (play && scheduler) {
         await scheduler.scheduleTempoSwitch(t)
@@ -63,13 +61,43 @@ export default function PlayerControls({ scheduler }: Props = {}) {
 
   return (
     <div className="flex items-center gap-4 py-3">
-  <LoopProgress size={84} onToggle={onToggle} />
-      <div className="flex items-center gap-2">
-        <label className="text-sm font-medium text-gray-700" htmlFor="tempo">Tempo</label>
-        <select id="tempo" value={tempo} onChange={onTempoChange} aria-label="Tempo" className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm">
-          <option value="fast">Fast</option>
-          <option value="slow">Slow</option>
-        </select>
+      <LoopProgress size={84} onToggle={onToggle} />
+      <div className="flex flex-col items-start gap-1">
+        <span id="tempo-label" className="text-sm font-medium text-gray-700">Tempo</span>
+        <div
+          role="group"
+          aria-labelledby="tempo-label"
+          className="relative grid grid-cols-2 rounded-full border border-gray-300 bg-gray-100 overflow-hidden"
+          style={{ minWidth: 160 }}
+        >
+          <span
+            aria-hidden="true"
+            className="absolute top-0 bottom-0 left-0 w-1/2 rounded-full will-change-transform"
+            style={{
+              transform: tempo === 'fast' ? 'translateX(0%)' : 'translateX(100%)',
+              backgroundColor: tempo === 'fast' ? 'var(--color-brand-red)' : 'var(--color-brand-navy)',
+              transition: 'transform 250ms linear, background-color 250ms linear'
+            }}
+          />
+          <button
+            type="button"
+            data-testid="tempo-fast"
+            aria-pressed={tempo === 'fast'}
+            className={`relative z-10 px-3 py-1.5 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${tempo === 'fast' ? 'text-white' : 'text-gray-800'}`}
+            onClick={() => setTempoValue(tempo === 'fast' ? 'slow' : 'fast')}
+          >
+            Fast
+          </button>
+          <button
+            type="button"
+            data-testid="tempo-slow"
+            aria-pressed={tempo === 'slow'}
+            className={`relative z-10 px-3 py-1.5 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${tempo === 'slow' ? 'text-white' : 'text-gray-800'}`}
+            onClick={() => setTempoValue(tempo === 'slow' ? 'fast' : 'slow')}
+          >
+            Slow
+          </button>
+        </div>
       </div>
       <Tooltip.Provider>
         <Tooltip.Root delayDuration={250}>
