@@ -7,6 +7,7 @@ import { usePartsStore } from '@/hooks/usePartsStore'
 import { Headphones, Volume2, VolumeX, Trash2 } from 'lucide-react'
 import { useAssignments } from '@/hooks/useAssignments'
 import * as Tooltip from '@radix-ui/react-tooltip'
+import { AnimatePresence, motion } from 'framer-motion'
 
 export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentType }) {
   const { soloInstanceId, setParts, setSoloInstanceId, parts } = usePartsStore()
@@ -19,17 +20,19 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
   }, [soloInstanceId, inst.id, inst.isMuted, inst.volumeBalance])
 
   return (
-  <div data-inst-id={inst.id} data-queued={!!inst.isLoading} className="relative flex flex-wrap xl:flex-nowrap items-center gap-x-1.5 lg:gap-x-2 gap-y-1 pt-2 pb-1">
-      {inst.isLoading && inst.queueScheduleTime != null && inst.queueStartTime != null && (
-        <QueuedStrip scheduleTime={inst.queueScheduleTime} startTime={inst.queueStartTime} />
-      )}
+  <div data-inst-id={inst.id} data-queued={!!inst.isLoading} className="relative flex flex-wrap xl:flex-nowrap items-center gap-x-1.5 lg:gap-x-1.5 gap-y-1 pt-2 pb-1">
+      <AnimatePresence initial={false}>
+        {inst.isLoading && inst.queueScheduleTime != null && inst.queueStartTime != null && (
+          <QueuedStrip key={`queued-${inst.id}`} scheduleTime={inst.queueScheduleTime} startTime={inst.queueStartTime} />
+        )}
+      </AnimatePresence>
       {/* Icon/name block */}
-      <div className="flex min-w-0 items-center gap-2 order-1">
+  <div className="flex min-w-0 items-center gap-2 order-1 xl:w-[48px] xl:flex-none xl:shrink-0">
         <InstrumentFamilyIcon instrumentId={inst.instrumentId} />
         <span className="sr-only" data-testid="inst-name">{inst.name}{inst.hasError ? ' (File missing)' : ''}</span>
       </div>
       {/* Controls block */}
-      <div className="ml-auto flex items-center gap-1 md:gap-1.5 shrink-0 order-2 lg:order-3">
+  <div className="ml-auto xl:ml-0 flex items-center gap-1 md:gap-1.5 shrink-0 order-2 lg:order-3 xl:w-[128px] xl:justify-end">
         <Tooltip.Provider>
           <Tooltip.Root delayDuration={250}>
             <Tooltip.Trigger asChild>
@@ -111,7 +114,8 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
       {/* Compact slider (wraps under on small screens) */}
       <input
         aria-label={`${inst.name} balance`}
-  className="order-last basis-full w-full xl:order-2 xl:basis-auto xl:w-auto ml-0 xl:ml-2 h-2 min-w-[80px] flex-1 xl:min-w-[140px] xl:max-w-[200px]"
+        className="order-last basis-full w-full xl:order-2 xl:basis-auto xl:w-auto xl:flex-1 ml-0 h-2 min-w-[80px] flex-1 range--pink"
+        style={{ ['--range-progress' as any]: `${inst.volumeBalance}%` }}
         type="range"
         min={0}
         max={100}
@@ -208,13 +212,18 @@ function QueuedStrip({ scheduleTime, startTime }: { scheduleTime: number; startT
     return () => cancelAnimationFrame(id)
   }, [scheduleTime, startTime])
   return (
-    <span
+    <motion.span
       aria-label="Queued"
       title="Queued"
       className="pointer-events-none absolute left-0 right-0 top-0 h-[2px] overflow-hidden rounded-full bg-gray-200"
+      style={{ transformOrigin: 'top' }}
+      initial={{ opacity: 1, scaleY: 1 }}
+      animate={{ opacity: 1, scaleY: 1 }}
+      exit={{ opacity: 0, scaleY: 0.6 }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
     >
       <span ref={fillRef} className="absolute inset-y-0 left-0 w-full bg-gray-500 shadow-[0_0_8px_rgba(19,32,103,0.35)] will-change-transform" style={{ transform: 'scaleX(0)' }} />
       <span className="absolute inset-0 shimmer" aria-hidden="true" />
-    </span>
+    </motion.span>
   )
 }

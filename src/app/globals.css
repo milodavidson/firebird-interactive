@@ -60,8 +60,23 @@ input[type="range"] {
   accent-color: var(--color-brand-navy);
 }
 @supports (-webkit-appearance: none) {
-  input[type="range"] { -webkit-appearance: none; background: transparent; }
+  input[type="range"] { appearance: none; -webkit-appearance: none; background: transparent; }
   input[type="range"]::-webkit-slider-runnable-track { height: 4px; background: #e5e7eb; border-radius: 9999px; }
   input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: var(--color-brand-navy); border-radius: 9999px; margin-top: -5px; transition: transform 120ms ease; }
   input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.12); }
+
+  /* Pink progress fill variant using CSS var --range-progress (e.g., "65%") */
+  input[type="range"].range--pink::-webkit-slider-runnable-track {
+    background: linear-gradient(
+      to right,
+      var(--color-brand-pink) 0%,
+      var(--color-brand-pink) var(--range-progress, 0%),
+      #e5e7eb var(--range-progress, 0%),
+      #e5e7eb 100%
+    );
+  }
 }
+
+/* Firefox */
+input[type="range"].range--pink::-moz-range-track { height: 4px; background: #e5e7eb; border-radius: 9999px; }
+input[type="range"].range--pink::-moz-range-progress { height: 4px; background: var(--color-brand-pink); border-radius: 9999px; }

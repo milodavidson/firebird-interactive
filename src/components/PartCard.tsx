@@ -4,6 +4,7 @@ import { usePartsStore } from '@/hooks/usePartsStore'
 import { useAssignments } from '@/hooks/useAssignments'
 import AssignedInstrument from '@/components/AssignedInstrument'
 import { AnimatePresence, motion } from 'framer-motion'
+import { Music, Drum, Waves, Piano } from 'lucide-react'
 
 export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'rhythm' | 'texture' }) {
   const { parts } = usePartsStore()
@@ -63,7 +64,12 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
       }}
       className={`rounded-lg border p-4 md:p-5 transition h-full flex flex-col ${atCapacity ? 'opacity-60' : ''}`}
     >
-      <div className="mb-3 text-base md:text-lg font-semibold" data-testid={`part-${part.id}`}>{part.name} {atCapacity ? '· full' : ''}</div>
+      <div className="mb-3 text-base md:text-lg font-semibold" data-testid={`part-${part.id}`}>
+        <span className="inline-flex items-center gap-2">
+          <PartIcon partId={part.id} />
+          <span>{part.name} {atCapacity ? '· full' : ''}</span>
+        </span>
+      </div>
   <ul className="list-none pl-0 space-y-2.5 md:space-y-3 flex-1 overflow-auto min-h-0">
         {/* Always mounted placeholder that fades/collapses when not empty */}
         <motion.li
@@ -94,4 +100,22 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
       </ul>
     </motion.div>
   )
+}
+
+function PartIcon({ partId }: { partId: 'melody' | 'harmony' | 'rhythm' | 'texture' }) {
+  const cls = 'h-5 w-5 md:h-6 md:w-6 text-[var(--color-brand-navy)]'
+  const stroke = 1.0
+  switch (partId) {
+    case 'melody':
+      return <Music className={cls} strokeWidth={stroke} aria-hidden="true" />
+    case 'harmony':
+      return <Piano className={cls} strokeWidth={stroke} aria-hidden="true" />
+    case 'rhythm':
+      // Prefer Drum if available; fallback to Timer for a ticking metaphor
+      return <Drum className={cls} strokeWidth={stroke} aria-hidden="true" />
+    case 'texture':
+      return <Waves className={cls} strokeWidth={stroke} aria-hidden="true" />
+    default:
+      return null
+  }
 }
