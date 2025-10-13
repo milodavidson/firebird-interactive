@@ -10,7 +10,7 @@ import * as Tooltip from '@radix-ui/react-tooltip'
 import { AnimatePresence, motion } from 'framer-motion'
 
 export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentType }) {
-  const { soloInstanceId, setParts, setSoloInstanceId, parts } = usePartsStore()
+  const { soloInstanceId, setParts, setSoloInstanceId, parts, play } = usePartsStore()
   const isSoloed = soloInstanceId === inst.id
   const { removeInstrument } = useAssignments()
   // Keep base gains in sync with UI state (solo/mute/balance)
@@ -22,7 +22,7 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
   return (
   <div data-inst-id={inst.id} data-queued={!!inst.isLoading} className="relative flex flex-wrap xl:flex-nowrap items-center gap-x-1.5 lg:gap-x-1.5 gap-y-1 pt-2 pb-1">
       <AnimatePresence initial={false}>
-        {inst.isLoading && inst.queueScheduleTime != null && inst.queueStartTime != null && (
+        {play && inst.isLoading && inst.queueScheduleTime != null && inst.queueStartTime != null && (
           <QueuedStrip key={`queued-${inst.id}`} scheduleTime={inst.queueScheduleTime} startTime={inst.queueStartTime} />
         )}
       </AnimatePresence>
@@ -182,12 +182,10 @@ function QueuedProgress({ scheduleTime, startTime, small }: { scheduleTime: numb
 // Thin, unobtrusive progress strip positioned at the top edge of the row
 function QueuedStrip({ scheduleTime, startTime }: { scheduleTime: number; startTime: number }) {
   const fillRef = useRef<HTMLSpanElement | null>(null)
+  const prevScheduleRef = useRef<number | null>(null)
   useEffect(() => {
     const ctx = audioService.audioCtx
     const now = ctx ? ctx.currentTime : 0
-    const total = Math.max(0.001, scheduleTime - startTime)
-    const elapsed = Math.max(0, now - startTime)
-    const p0 = Math.min(1, elapsed / total)
     const remaining = Math.max(0, scheduleTime - now)
 
     const el = fillRef.current
@@ -195,8 +193,40 @@ function QueuedStrip({ scheduleTime, startTime }: { scheduleTime: number; startT
 
     // Initialize at current progress, then animate to full over remaining time.
     el.style.transformOrigin = 'left'
+    // Capture current computed scale to avoid visual jumps
+    let curScale = 0
+    try {
+      const cs = getComputedStyle(el)
+      const t = cs.transform
+      if (t && t !== 'none') {
+        // matrix(a, b, c, d, e, f) or matrix3d(a, b, ..., p) => a is scaleX
+        const m2d = t.match(/matrix\(([^)]+)\)/)
+        const m3d = !m2d ? t.match(/matrix3d\(([^)]+)\)/) : null
+        const raw = m2d?.[1] ?? m3d?.[1]
+        if (raw) {
+          const parts = raw.split(',').map(s => parseFloat(s.trim()))
+          if (parts.length >= 1 && Number.isFinite(parts[0])) curScale = Math.max(0, Math.min(1, parts[0]))
+        }
+      } else {
+        // Fallback to inline style transform if present
+        const inline = el.style.transform
+        const mm = inline.match(/scaleX\(([^)]+)\)/)
+        if (mm) {
+          const v = parseFloat(mm[1])
+          if (Number.isFinite(v)) curScale = Math.max(0, Math.min(1, v))
+        }
+      }
+    } catch {}
+    // Fallback to time-based progress if we couldn't read a transform (e.g., first retime)
+    if (curScale === 0) {
+      const prevSchedule = prevScheduleRef.current ?? scheduleTime
+      const totalPrev = Math.max(0.001, prevSchedule - startTime)
+      const elapsed = Math.max(0, now - startTime)
+      curScale = Math.max(0, Math.min(1, elapsed / totalPrev))
+    }
+    // Lock current visual progress without transition
     el.style.transition = 'none'
-    el.style.transform = `scaleX(${p0})`
+    el.style.transform = `scaleX(${curScale})`
 
     const id = requestAnimationFrame(() => {
       const el2 = fillRef.current
@@ -209,6 +239,7 @@ function QueuedStrip({ scheduleTime, startTime }: { scheduleTime: number; startT
       el2.style.transition = `transform ${remaining}s linear`
       el2.style.transform = 'scaleX(1)'
     })
+    prevScheduleRef.current = scheduleTime
     return () => cancelAnimationFrame(id)
   }, [scheduleTime, startTime])
   return (

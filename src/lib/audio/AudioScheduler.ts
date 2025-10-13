@@ -13,6 +13,8 @@ export class AudioScheduler {
   removedInstanceIdsRef: MutableRef<Set<string>>
   nodeStartTimesRef: MutableRef<Record<string, { soft?: number[]; loud?: number[]; beatIndex?: number[] }>>
   private loopTimer: any = null
+  private queueTimer: any = null
+  private nextLoopScheduleTime: number | null = null
   private tempoSwitch: { targetTempo: Tempo; scheduleTime?: number; withinBeatTarget?: number; withinBeatTargetCorrected?: number } | null = null
   private lastTempoSwitchExec: { scheduleTime: number; withinBeatCur: number; withinBeatUsed: number } | null = null
   private switchCount = 0
@@ -105,9 +107,14 @@ export class AudioScheduler {
       }
     }
 
-    // schedule processing of deferred queue exactly at scheduleTime
-  const delayMs = Math.max(0, (scheduleTime - ctx.currentTime) * 1000)
-    setTimeout(() => this.processDeferredQueueAtBeat(nextBeatIndex, scheduleTime), delayMs)
+    // Remember next loop schedule time and schedule processing of deferred queue exactly at that boundary
+    this.nextLoopScheduleTime = scheduleTime
+    const delayMs = Math.max(0, (scheduleTime - ctx.currentTime) * 1000)
+    if (this.queueTimer) {
+      clearTimeout(this.queueTimer)
+      this.queueTimer = null
+    }
+    this.queueTimer = setTimeout(() => this.processDeferredQueueAtBeat(nextBeatIndex, scheduleTime), delayMs)
 
   // schedule next loop aligned to the loop we just started: next start = scheduleTime + loopDuration
   // Using transportStart-based loop grid here causes the very first loop to be one beat short when
@@ -218,6 +225,8 @@ export class AudioScheduler {
       } catch {}
       for (const p of parts) {
         for (const inst of p.assignedInstruments) {
+          // Do not start queued instruments during a tempo switch; they should wait for the next loop start
+          if ((inst as any).isLoading) continue
           const newBufs = audioService.getBuffersFor(inst.id, targetTempo)
           const fadeMs = Math.min(30, secondsPerBeat(targetTempo) * 1000)
           // First, fade out any existing nodes at scheduleTime to avoid clobbering the new ones
@@ -251,12 +260,39 @@ export class AudioScheduler {
         clearTimeout(this.loopTimer)
         this.loopTimer = null
       }
+      // Also clear any pending queue processing timer tied to the old grid
+      if (this.queueTimer) {
+        clearTimeout(this.queueTimer)
+        this.queueTimer = null
+      }
       const lead = 0.02
       const { scheduleTime: nextLoopOnNewGrid } = computeNextLoopScheduleTime(ctx.currentTime, this.transportStartRef.current!, targetTempo)
       const fireAt = nextLoopOnNewGrid - lead
       const delayMs = Math.max(0, (fireAt - ctx.currentTime) * 1000)
       try { console.log('[TempoSwitch][resetLoopTimer]', { nextLoopOnNewGrid, fireAt, delayMs }) } catch {}
       this.loopTimer = setTimeout(() => this.scheduleLoopStartIfNeeded(), delayMs)
+
+      // Retarget any currently queued instruments to the next loop boundary on the new grid
+      if (this.deferredQueueRef.current.length > 0) {
+        const newSchedule = nextLoopOnNewGrid
+        const now = ctx.currentTime
+        const updatedQueue = this.deferredQueueRef.current.map(q => ({
+          ...q,
+          queueScheduleTime: newSchedule,
+          // Keep original start for progress continuity; recompute remaining to follow loop pacing
+          queueTimeRemaining: Math.max(0, newSchedule - now)
+        }))
+        this.deferredQueueRef.current = updatedQueue
+        if (this.setPartsCb) {
+          const ids = new Set(updatedQueue.map(q => q.id))
+          this.setPartsCb(prev => prev.map(p => ({
+            ...p,
+            assignedInstruments: p.assignedInstruments.map(ai => ids.has(ai.id)
+              ? { ...ai, queueScheduleTime: newSchedule, queueTimeRemaining: Math.max(0, newSchedule - now) }
+              : ai)
+          })))
+        }
+      }
 
       // Post-check: log within-beat at +1 and +2 target beats after the switch to ensure proper progression
       const spbT = secondsPerBeat(targetTempo)
@@ -301,6 +337,11 @@ export class AudioScheduler {
       clearTimeout(this.loopTimer)
       this.loopTimer = null
     }
+    if (this.queueTimer) {
+      clearTimeout(this.queueTimer)
+      this.queueTimer = null
+    }
+    this.nextLoopScheduleTime = null
     this.hasStarted = false
   }
 

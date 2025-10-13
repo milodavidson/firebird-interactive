@@ -62,12 +62,12 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
           setSelectedInstrument(null)
         }
       }}
-      className={`rounded-lg border p-4 md:p-5 transition h-full flex flex-col ${atCapacity ? 'opacity-60' : ''}`}
+  className={`rounded-lg border p-4 md:p-5 transition h-full flex flex-col`}
     >
       <div className="mb-3 text-base md:text-lg font-semibold" data-testid={`part-${part.id}`}>
         <span className="inline-flex items-center gap-2">
           <PartIcon partId={part.id} />
-          <span>{part.name} {atCapacity ? '· full' : ''}</span>
+          <span>{part.name}</span>
         </span>
       </div>
   <ul className="list-none pl-0 space-y-2.5 md:space-y-3 flex-1 overflow-auto min-h-0">

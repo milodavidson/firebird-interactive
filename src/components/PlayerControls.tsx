@@ -34,6 +34,14 @@ export default function PlayerControls({ scheduler }: Props = {}) {
       transportStartRef.current = null
       audioService.stopAllActive(50)
       scheduler?.stop()
+      // Cancel any queued instruments so resume doesn't show queue strips
+      deferredQueueRef.current = []
+      setParts(prev => prev.map(p => ({
+        ...p,
+        assignedInstruments: p.assignedInstruments.map(ai => (
+          ai.isLoading ? { ...ai, isLoading: false, queueStartTime: undefined, queueScheduleTime: undefined, queueTimeRemaining: undefined } : ai
+        ))
+      })))
     }
   }, [hasAnyInstruments, play, scheduler, setPlay, transportStartRef])
 
