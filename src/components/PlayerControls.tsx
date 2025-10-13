@@ -52,8 +52,8 @@ export default function PlayerControls({ scheduler }: Props = {}) {
     setPlay(false)
     audioService.stopAllActive(50)
     transportStartRef.current = null
-    currentTempoRef.current = 'fast'
-    setTempo('fast')
+    currentTempoRef.current = 'slow'
+    setTempo('slow')
     deferredQueueRef.current = []
     setParts(() => [
       { id: 'melody', name: 'Melody', assignedInstruments: [] },

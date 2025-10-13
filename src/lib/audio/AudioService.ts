@@ -232,7 +232,7 @@ export class AudioService {
       getParts: () => [],
       scheduledTempoSwitch: null,
       getTransportStartTime: () => null,
-      getTempo: () => 'fast'
+  getTempo: () => 'slow'
     }
   }
 

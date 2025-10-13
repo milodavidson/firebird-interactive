@@ -64,8 +64,7 @@ export default function FirebirdProgressChip() {
       extrasByPart[pid] = Array.from(new Set(extras))
     }
     const tempoOk = tempo === 'fast'
-    const anyAssigned = parts.some(p => p.assignedInstruments.length > 0)
-    const points = presentCount + loudCount + (tempoOk && anyAssigned ? 1 : 0)
+    const points = presentCount + loudCount + (tempoOk ? 1 : 0)
     const totalPoints = requiredTotal * 2 + 1 // 19
     const percent = Math.round((points / totalPoints) * 100)
     return { percent, points, totalPoints, presentCount, loudCount, requiredTotal, tempoOk, presenceDetails, extrasByPart }
