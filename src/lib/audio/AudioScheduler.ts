@@ -219,7 +219,7 @@ export class AudioScheduler {
       for (const p of parts) {
         for (const inst of p.assignedInstruments) {
           const newBufs = audioService.getBuffersFor(inst.id, targetTempo)
-          const fadeMs = Math.min(60, secondsPerBeat(targetTempo) * 1000)
+          const fadeMs = Math.min(30, secondsPerBeat(targetTempo) * 1000)
           // First, fade out any existing nodes at scheduleTime to avoid clobbering the new ones
           audioService.fadeAndStopNode(inst.id, 'soft', scheduleTime, fadeMs)
           audioService.fadeAndStopNode(inst.id, 'loud', scheduleTime, fadeMs)
