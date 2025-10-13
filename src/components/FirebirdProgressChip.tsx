@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import { Check, X, Minus } from 'lucide-react'
 import { usePartsStore } from '@/hooks/usePartsStore'
 
@@ -17,9 +18,9 @@ export default function FirebirdProgressChip() {
   const { parts, tempo, play } = usePartsStore()
   const [showChecklist, setShowChecklist] = useState(false)
   const containerRef = useRef<HTMLDivElement | null>(null)
-  const [celebrate, setCelebrate] = useState(false)
   const barRef = useRef<HTMLSpanElement | null>(null)
   const [anchorLeft, setAnchorLeft] = useState<number | null>(null)
+  const [showShimmer, setShowShimmer] = useState(false)
 
   const data = useMemo(() => {
     // Revised scoring: 1 point for each required instrument present (9),
@@ -58,13 +59,14 @@ export default function FirebirdProgressChip() {
     return { percent, points, totalPoints, presentCount, loudCount, requiredTotal, tempoOk, presenceDetails }
   }, [parts, tempo])
 
-  // Celebrate on reaching 100%
+  // Trigger shimmer on reaching 100%
   const prevPercent = useRef<number>(0)
   useEffect(() => {
     if (prevPercent.current < 100 && data.percent === 100) {
-      setCelebrate(true)
-      const t = setTimeout(() => setCelebrate(false), 1200)
-      return () => clearTimeout(t)
+      // Trigger a single-pass shimmer overlay
+      setShowShimmer(true)
+      const t2 = setTimeout(() => setShowShimmer(false), 900) // match shimmer duration (~0.8s) with small buffer
+      return () => { clearTimeout(t2) }
     }
     prevPercent.current = data.percent
   }, [data.percent])
@@ -106,27 +108,38 @@ export default function FirebirdProgressChip() {
             <button
               type="button"
               aria-label={`Firebird progress ${data.points} of ${data.totalPoints}`}
-              className={`inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-2.5 sm:px-3 h-9 md:h-9 xl:h-9 shrink-0 pressable w-full md:max-w-[540px] lg:max-w-[680px] xl:max-w-[820px] transition-transform duration-150 ease-out hover:scale-[1.02] hover:shadow ${celebrate ? 'glow-pulse' : ''}`}
+              className={`inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-2.5 sm:px-3 h-9 md:h-9 xl:h-9 shrink-0 pressable w-full md:max-w-[540px] lg:max-w-[680px] xl:max-w-[820px] transition-transform duration-150 ease-out hover:scale-[1.02] hover:shadow`}
               onClick={() => setShowChecklist(v => !v)}
             >
               <img src="/icons/Firebird.png" alt="Firebird icon" className="h-4 w-auto md:h-5 xl:h-5" />
               <span ref={barRef} className="relative inline-flex items-center flex-1 min-w-0 md:min-w-[160px] h-1.5 md:h-2 xl:h-2 rounded-full bg-gray-200 overflow-hidden">
-                {/* Solid fill only (shimmer removed) */}
-                <span className={`h-full ${color}`} style={{ width: `${data.percent}%`, transition: 'width 200ms linear' }} />
+                {/* Fill + one-time shimmer on completion */}
+                <span className={`relative overflow-hidden h-full ${color}`} style={{ width: `${data.percent}%`, transition: 'width 200ms linear' }}>
+                  {showShimmer && data.percent === 100 && (
+                    <motion.span
+                      aria-hidden
+                      className="absolute inset-0"
+                      style={{
+                        background: 'linear-gradient(90deg, transparent 0%, #FFFFFF80 50%, transparent 100%)'
+                      }}
+                      initial={{ x: '-100%' }}
+                      animate={{ x: '200%' }}
+                      transition={{ duration: 0.8, ease: 'easeInOut' }}
+                    />
+                  )}
+                </span>
               </span>
             </button>
 
-      {/* Instruction just below the chip (does not affect layout height) */}
-      <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 text-xs md:text-sm text-gray-700 whitespace-nowrap">
-        Try recreating Stravinsky&apos;s epic finale from <em>The Firebird</em>!
-      </div>
-
-      {/* Congratulatory text positioned under the instruction without affecting layout height */}
+      {/* Single line under chip: swaps instruction with congrats when complete */}
       <div
-        className={`absolute left-1/2 -translate-x-1/2 top-full mt-5 text-xs md:text-sm font-semibold text-[var(--color-brand-navy)] transition-opacity duration-300 ${data.percent === 100 ? 'opacity-100' : 'opacity-0'}`}
-        style={{ whiteSpace: 'nowrap' }}
+        className={`absolute left-1/2 -translate-x-1/2 top-full mt-1 text-xs md:text-sm whitespace-nowrap ${data.percent === 100 ? 'font-semibold text-[var(--color-brand-navy)]' : 'text-gray-700'}`}
       >
-        Congratulations, Maestro! You did it!
+        {data.percent === 100 ? (
+          <>Congratulations, Maestro! You did it!</>
+        ) : (
+          <>Try recreating Stravinsky&apos;s epic finale from <em>The Firebird</em>!</>
+        )}
       </div>
 
       {showChecklist && (
