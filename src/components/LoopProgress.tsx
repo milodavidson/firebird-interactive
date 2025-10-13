@@ -10,9 +10,10 @@ type Props = {
   size?: number
   stroke?: number
   onToggle: () => void
+  disabled?: boolean
 }
 
-export function LoopProgress({ size = 72, stroke = 6, onToggle }: Props) {
+export function LoopProgress({ size = 72, stroke = 6, onToggle, disabled = false }: Props) {
   const { play, currentTempoRef, transportStartRef, tempo: uiTempo } = usePartsStore()
   const radius = (size - stroke) / 2
   const circumference = 2 * Math.PI * radius
@@ -50,6 +51,7 @@ export function LoopProgress({ size = 72, stroke = 6, onToggle }: Props) {
     <button
       aria-label={play ? 'Pause' : 'Play'}
       onClick={onToggle}
+      disabled={disabled}
       className="relative inline-flex items-center justify-center"
       style={{ width: size, height: size }}
     >
@@ -76,7 +78,7 @@ export function LoopProgress({ size = 72, stroke = 6, onToggle }: Props) {
         />
       </svg>
       <span className="absolute inset-0 grid place-items-center">
-        <span className="grid h-10 w-10 place-items-center rounded-full bg-[var(--color-brand-navy)] text-white shadow">
+        <span className={`grid h-10 w-10 place-items-center rounded-full text-white shadow ${disabled ? 'bg-gray-300 cursor-not-allowed' : 'bg-[var(--color-brand-navy)]'}`}>
           {play ? <Pause size={18} /> : <Play size={18} className="translate-x-[1px]" />}
         </span>
       </span>

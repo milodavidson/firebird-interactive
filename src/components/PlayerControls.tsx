@@ -12,9 +12,15 @@ import * as Tooltip from '@radix-ui/react-tooltip'
 type Props = { scheduler?: AudioScheduler }
 
 export default function PlayerControls({ scheduler }: Props = {}) {
-  const { play, tempo, setPlay, setTempo, transportStartRef, currentTempoRef, setParts, deferredQueueRef } = usePartsStore()
+  const { play, tempo, setPlay, setTempo, transportStartRef, currentTempoRef, setParts, deferredQueueRef, parts } = usePartsStore()
+
+  // Total assigned instruments across all parts
+  const totalAssigned = parts.reduce((sum, p) => sum + p.assignedInstruments.length, 0)
+  const hasAnyInstruments = totalAssigned > 0
 
   const onToggle = useCallback(async () => {
+    // Do nothing if there are no instruments
+    if (!hasAnyInstruments) return
     audioService.initIfNeeded()
     if (!audioService.audioCtx) return
     if (audioService.audioCtx.state === 'suspended') await audioService.audioCtx.resume()
@@ -29,7 +35,7 @@ export default function PlayerControls({ scheduler }: Props = {}) {
       audioService.stopAllActive(50)
       scheduler?.stop()
     }
-  }, [play, scheduler, setPlay, transportStartRef])
+  }, [hasAnyInstruments, play, scheduler, setPlay, transportStartRef])
 
   useSpaceToggle(onToggle)
 
@@ -59,9 +65,19 @@ export default function PlayerControls({ scheduler }: Props = {}) {
     [play, scheduler, setTempo]
   )
 
+  // If the last instrument is removed during playback, stop and reset progress to 0
+  useEffect(() => {
+    if (play && !hasAnyInstruments) {
+      setPlay(false)
+      audioService.stopAllActive(50)
+      transportStartRef.current = null
+      scheduler?.stop()
+    }
+  }, [hasAnyInstruments, play, scheduler, setPlay, transportStartRef])
+
   return (
     <div className="flex items-center gap-4 py-3">
-      <LoopProgress size={84} onToggle={onToggle} />
+  <LoopProgress size={84} onToggle={onToggle} disabled={!hasAnyInstruments} />
       <div className="relative flex flex-col items-center gap-1 self-center -translate-y-2.5">
         <span id="tempo-label" className="text-sm font-medium text-gray-700 text-center">Tempo</span>
         <div
