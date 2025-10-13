@@ -31,8 +31,8 @@ export default function InteractiveListeningMap() {
     <div className="mx-auto max-w-6xl p-4 min-h-svh flex flex-col">
       <header className="mb-4 flex items-center justify-between shrink-0">
         <div>
-          <h1 className="m-0 text-xl font-semibold text-[var(--color-brand-navy)]">Interactive Listening Map</h1>
-          <p className="text-sm text-gray-600">Assign instruments to parts and play.</p>
+          <h1 className="m-0 text-xl font-semibold text-[var(--color-brand-navy)]">Orchestra Sandbox</h1>
+          <p className="text-sm text-gray-600">Build parts, mix, and play.</p>
         </div>
         <PlayerControls scheduler={scheduler} />
       </header>

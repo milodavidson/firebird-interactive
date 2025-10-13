@@ -12,8 +12,8 @@ const cadiz = localFont({
   variable: '--font-cadiz'
 })
 export const metadata = {
-  title: 'Interactive Listening Map',
-  description: 'Beat-aligned multi-part playback with tempo switching'
+  title: 'Orchestra Sandbox',
+  description: 'Build and play parts together with beat-aligned loops and tempo switching'
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
