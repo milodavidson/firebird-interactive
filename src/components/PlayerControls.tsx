@@ -91,6 +91,7 @@ export default function PlayerControls({ scheduler }: Props = {}) {
       <div className="flex items-center justify-center">
         <div
           role="group"
+          aria-label="Tempo"
           className="relative grid grid-cols-2 h-10 rounded-full border border-gray-300 bg-gray-100 overflow-hidden w-full min-w-0 max-w-[220px] sm:max-w-[240px]"
         >
           <span

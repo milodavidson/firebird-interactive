@@ -30,6 +30,7 @@ export default function InteractiveListeningMap() {
 
   return (
     <div className="mx-auto max-w-6xl p-4 min-h-svh flex flex-col">
+      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 bg-white border border-gray-300 rounded px-2 py-1">Skip to main content</a>
   <header className="mb-4 grid items-center gap-2 md:gap-3 grid-cols-[1fr_auto] md:grid-cols-[auto,1fr,auto] xl:grid-cols-[auto,1fr,auto]">
   {/* Row 1: Title only on mobile (hide description), centered on mobile */}
   <div className="justify-self-center md:justify-self-start col-start-1 col-end-2 row-start-1 min-w-0">
@@ -47,7 +48,7 @@ export default function InteractiveListeningMap() {
           <PlayerControls scheduler={scheduler} />
         </div>
       </header>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-[320px,1fr] flex-1 min-h-0">
+  <div className="grid grid-cols-1 gap-4 md:grid-cols-[320px,1fr] flex-1 min-h-0" id="main" role="main">
         <aside className="card p-4 h-full">
           <h2 className="mb-2 text-sm font-semibold text-gray-700">Instruments</h2>
           <InstrumentList />

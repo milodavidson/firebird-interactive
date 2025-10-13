@@ -22,6 +22,9 @@ export default function FirebirdProgressChip() {
   const barRef = useRef<HTMLSpanElement | null>(null)
   const [anchorLeft, setAnchorLeft] = useState<number | null>(null)
   const [showShimmer, setShowShimmer] = useState(false)
+  const triggerRef = useRef<HTMLButtonElement | null>(null)
+  const dialogRef = useRef<HTMLDivElement | null>(null)
+  const [reducedMotion, setReducedMotion] = useState(false)
 
   const data = useMemo(() => {
     // Revised scoring: 1 point for each required instrument present (9),
@@ -75,7 +78,7 @@ export default function FirebirdProgressChip() {
   useEffect(() => {
     if (prevPercent.current < 100 && data.percent === 100) {
       // Trigger a single-pass shimmer overlay
-      setShowShimmer(true)
+      if (!reducedMotion) setShowShimmer(true)
       const t2 = setTimeout(() => setShowShimmer(false), 900) // match shimmer duration (~0.8s) with small buffer
       return () => { clearTimeout(t2) }
     }
@@ -119,7 +122,10 @@ export default function FirebirdProgressChip() {
             <button
               type="button"
               aria-label={`Firebird progress ${data.points} of ${data.totalPoints}`}
-              className={`inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-2.5 sm:px-3 h-9 md:h-9 xl:h-9 shrink-0 pressable w-full md:max-w-[540px] lg:max-w-[680px] xl:max-w-[820px] transition-transform duration-150 ease-out hover:scale-[1.02] hover:shadow`}
+              aria-expanded={showChecklist}
+              aria-controls="firebird-checklist"
+              ref={triggerRef}
+              className={`inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-2.5 sm:px-3 h-9 md:h-9 xl:h-9 shrink-0 pressable w-full md:max-w-[540px] lg:max-w-[680px] xl:max-w-[820px] transition-transform duration-150 ease-out hover:scale-[1.02] hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-brand-navy)]`}
               onClick={() => setShowChecklist(v => !v)}
             >
               <img src="/icons/Firebird.png" alt="Firebird icon" className="h-4 w-auto md:h-5 xl:h-5" />
@@ -144,6 +150,9 @@ export default function FirebirdProgressChip() {
 
       {/* Single line under chip: swaps instruction with congrats when complete */}
       <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
         className={`absolute left-1/2 -translate-x-1/2 top-full mt-1 text-xs md:text-sm whitespace-nowrap ${data.percent === 100 ? 'font-semibold text-[var(--color-brand-navy)]' : 'text-gray-700'}`}
       >
         {data.percent === 100 ? (
@@ -157,6 +166,10 @@ export default function FirebirdProgressChip() {
         <div
           role="dialog"
           aria-label="Firebird checklist"
+          id="firebird-checklist"
+          aria-modal="true"
+          tabIndex={-1}
+          ref={dialogRef}
           className="absolute z-20 -translate-x-1/2 mt-3 w-64 md:w-72 rounded-lg border border-gray-200 bg-white shadow-lg p-3 text-sm"
           style={{ left: anchorLeft != null ? `${anchorLeft}px` : '50%', top: '100%' }}
         >
@@ -175,7 +188,7 @@ export default function FirebirdProgressChip() {
                 {d.status === 'loud' ? <Check size={14} /> : d.status === 'present-not-loud' ? <Minus size={14} /> : <X size={14} />}
                 <span className="capitalize min-w-[4.5rem]">{d.part}:</span>
                 <span className="capitalize">{nameById[d.inst] || d.inst}</span>
-                {d.status === 'present-not-loud' && <span className="text-gray-500">(make it loud!)</span>}
+                {d.status === 'present-not-loud' && <span className="text-gray-600">(make it loud!)</span>}
               </li>
             ))}
           </ul>

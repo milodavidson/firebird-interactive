@@ -79,6 +79,10 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
         }
       }}
       onKeyDown={(e) => {
+        const target = e.target as HTMLElement | null
+        const tag = (target?.tagName || '').toLowerCase()
+        const isInteractive = tag === 'button' || tag === 'a' || tag === 'input' || tag === 'select' || tag === 'textarea' || !!target?.isContentEditable
+        if (isInteractive) return
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()
           const el = e.currentTarget as HTMLDivElement

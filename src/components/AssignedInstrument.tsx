@@ -53,6 +53,7 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
           <Tooltip.Root delayDuration={250}>
             <Tooltip.Trigger asChild>
               <button
+                type="button"
                 data-testid="solo-toggle"
                 aria-label={isSoloed ? 'Unsolo' : 'Solo'}
                 aria-pressed={isSoloed}
@@ -68,7 +69,7 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
                   }
                 }}
               >
-                <Headphones size={14} />
+                <Headphones size={14} aria-hidden="true" />
               </button>
             </Tooltip.Trigger>
             <Tooltip.Portal>
@@ -81,6 +82,7 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
           <Tooltip.Root delayDuration={250}>
             <Tooltip.Trigger asChild>
               <button
+                type="button"
                 data-testid="mute-toggle"
                 aria-label={inst.isMuted ? 'Unmute' : 'Mute'}
                 aria-pressed={inst.isMuted}
@@ -98,7 +100,7 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
                   }
                 }}
               >
-                {inst.isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                {inst.isMuted ? <VolumeX size={14} aria-hidden="true" /> : <Volume2 size={14} aria-hidden="true" />}
               </button>
             </Tooltip.Trigger>
             <Tooltip.Portal>
@@ -111,11 +113,12 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
           <Tooltip.Root delayDuration={250}>
             <Tooltip.Trigger asChild>
               <button
+                type="button"
                 aria-label={`Remove ${inst.name}`}
                 className="btn btn-outline pressable px-1.5 py-1 text-[11px] md:px-2.5 md:py-1.5 md:text-sm"
                 onClick={() => removeInstrument(inst.id)}
               >
-                <Trash2 size={14} />
+                <Trash2 size={14} aria-hidden="true" />
               </button>
             </Tooltip.Trigger>
             <Tooltip.Portal>

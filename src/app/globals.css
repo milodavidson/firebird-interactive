@@ -48,6 +48,9 @@ body {
 /* Denial shake */
 @keyframes shake-x { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-2px);} 75% { transform: translateX(2px);} }
 .animate-shake-x { animation: shake-x 180ms ease-in-out; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-shake-x { animation: none !important; }
+}
 
 /* Queue shimmer on mount */
 @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%);} }
