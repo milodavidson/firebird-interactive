@@ -17,6 +17,13 @@ body {
   color: #0a0a0a;
 }
 
+/* Mobile scroll smoothing: reduce jitter/bounce when overscrolling at page edges */
+html, body {
+  -webkit-overflow-scrolling: touch; /* smoother momentum scrolling on iOS */
+  overscroll-behavior-y: contain; /* prevent scroll chaining into parent contexts */
+  touch-action: pan-y; /* hint to browser we're only scrolling vertically */
+}
+
 .card {
   @apply rounded-xl border border-gray-200 bg-white shadow-sm;
 }
