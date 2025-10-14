@@ -97,7 +97,7 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
           <span>{part.name}</span>
         </span>
       </div>
-  <ul className="list-none pl-0 space-y-2 md:space-y-2.5 flex-1 overflow-auto min-h-0">
+  <ul className="list-none pl-0 space-y-2 md:space-y-2.5 flex-1 xl:overflow-auto min-h-0">
         {/* Always mounted placeholder that fades/collapses when not empty */}
         <motion.li
           key="empty"
