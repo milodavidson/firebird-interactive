@@ -128,7 +128,7 @@ export default function FirebirdProgressChip() {
               aria-expanded={showChecklist}
               aria-controls="firebird-checklist"
               ref={triggerRef}
-              className={`inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-2.5 sm:px-3 h-9 md:h-9 xl:h-9 shrink-0 pressable w-full md:max-w-[540px] lg:max-w-[680px] xl:max-w-[820px] transition-transform duration-150 ease-out hover:scale-[1.02] hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-brand-navy)]`}
+              className={`inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-2 sm:px-3 h-8 sm:h-9 md:h-9 xl:h-9 shrink-0 pressable w-full md:max-w-[540px] lg:max-w-[680px] xl:max-w-[820px] transition-transform duration-150 ease-out hover:scale-[1.02] hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-brand-navy)]`}
               onClick={() => setShowChecklist(v => !v)}
             >
               <img src="/icons/Firebird.png" alt="Firebird icon" className="h-4 w-auto md:h-5 xl:h-5" />
