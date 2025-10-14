@@ -153,7 +153,7 @@ export default function FirebirdProgressChip() {
           </Tooltip.Trigger>
           {data.percent !== 100 && (
             <Tooltip.Portal>
-              <Tooltip.Content sideOffset={6} className="z-50 rounded bg-black/90 px-2 py-1 text-xs text-white shadow">
+              <Tooltip.Content side="bottom" sideOffset={6} className="z-50 rounded bg-black/90 px-2 py-1 text-xs text-white shadow">
                 <>Try recreating Stravinsky&apos;s epic finale from <em>The Firebird</em>! Click for checklist.</>
                 <Tooltip.Arrow className="fill-black/90" />
               </Tooltip.Content>
