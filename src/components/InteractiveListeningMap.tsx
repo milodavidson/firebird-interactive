@@ -44,7 +44,7 @@ export default function InteractiveListeningMap() {
           <FirebirdProgressChip />
         </div>
         {/* Row 3: Controls centered on mobile; right column on md+ */}
-        <div className="col-span-2 row-start-3 md:row-auto md:col-span-1 md:col-start-3 md:col-end-4 justify-self-center md:justify-self-end mt-0 mb-0">
+        <div className="col-span-2 row-start-3 md:row-auto md:col-span-1 md:col-start-3 md:col-end-4 w-full md:w-auto justify-self-stretch md:justify-self-end mt-0 mb-0">
           <PlayerControls scheduler={scheduler} />
         </div>
       </header>
