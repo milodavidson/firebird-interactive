@@ -65,7 +65,7 @@ export default function InteractiveListeningMap() {
   return (
     <div className="mx-auto max-w-6xl p-4 min-h-svh flex flex-col">
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 bg-white border border-gray-300 rounded px-2 py-1">Skip to main content</a>
-  <header ref={headerRef} className="mb-2 py-2 lg:py-0 grid items-center gap-1 md:gap-2 grid-cols-[1fr_auto] md:grid-cols-[auto,1fr,auto] xl:grid-cols-[auto,1fr,auto] sticky top-0 z-40 bg-white backdrop-blur-sm border-b-0 lg:border-b lg:border-gray-200 lg:static">
+  <header ref={headerRef} className="mb-2 py-2 lg:py-0 grid items-center gap-1 md:gap-2 grid-cols-[1fr_auto] md:grid-cols-[auto,1fr,auto] xl:grid-cols-[auto,1fr,auto] sticky top-0 z-40 bg-white backdrop-blur-sm border-b-0 lg:static">
   {/* Row 1: Title only on mobile (hide description), centered on mobile */}
   <div className="justify-self-center md:justify-self-start col-start-1 col-end-2 row-start-1 min-w-0">
           <div className="min-w-0 flex items-center gap-2 md:block">
