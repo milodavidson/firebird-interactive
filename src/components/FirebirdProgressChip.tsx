@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import * as Tooltip from '@radix-ui/react-tooltip'
 import { Check, X, Minus } from 'lucide-react'
 import { usePartsStore } from '@/hooks/usePartsStore'
 import { INSTRUMENTS } from '@/lib/instruments'
@@ -118,6 +119,9 @@ export default function FirebirdProgressChip() {
 
   return (
   <div ref={containerRef} className="relative inline-flex items-center w-full">
+      <Tooltip.Provider>
+        <Tooltip.Root delayDuration={0}>
+          <Tooltip.Trigger asChild>
             <button
               type="button"
               aria-label={`Firebird progress ${data.points} of ${data.totalPoints}`}
@@ -146,20 +150,29 @@ export default function FirebirdProgressChip() {
                 </span>
               </span>
             </button>
+          </Tooltip.Trigger>
+          {data.percent !== 100 && (
+            <Tooltip.Portal>
+              <Tooltip.Content sideOffset={6} className="rounded bg-black/90 px-2 py-1 text-xs text-white shadow">
+                <>Try recreating Stravinsky&apos;s epic finale from <em>The Firebird</em>!</>
+                <Tooltip.Arrow className="fill-black/90" />
+              </Tooltip.Content>
+            </Tooltip.Portal>
+          )}
+        </Tooltip.Root>
+      </Tooltip.Provider>
 
-      {/* Single line under chip: swaps instruction with congrats when complete */}
-      <div
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        className={`absolute left-1/2 -translate-x-1/2 top-full mt-1 text-xs md:text-sm whitespace-nowrap ${data.percent === 100 ? 'font-semibold text-[var(--color-brand-navy)]' : 'text-gray-700'}`}
-      >
-        {data.percent === 100 ? (
+      {/* Single line under chip: only show congrats when complete */}
+      {data.percent === 100 && (
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className={`absolute left-1/2 -translate-x-1/2 top-full mt-1 text-xs md:text-sm whitespace-nowrap font-semibold text-[var(--color-brand-navy)]`}
+        >
           <>Congratulations, Maestro! You did it!</>
-        ) : (
-          <>Try recreating Stravinsky&apos;s epic finale from <em>The Firebird</em>!</>
-        )}
-      </div>
+        </div>
+      )}
 
       {showChecklist && (
         <div
