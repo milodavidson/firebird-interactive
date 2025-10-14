@@ -130,7 +130,7 @@ export default function PlayerControls({ scheduler }: Props = {}) {
               <button className="btn btn-outline pressable h-10 w-10 p-0" aria-label="Clear" onClick={onClear}><Eraser size={16} /></button>
             </Tooltip.Trigger>
             <Tooltip.Portal>
-              <Tooltip.Content sideOffset={6} className="rounded bg-black/90 px-2 py-1 text-xs text-white shadow">
+              <Tooltip.Content side="bottom" sideOffset={6} className="z-50 rounded bg-black/90 px-2 py-1 text-xs text-white shadow">
                 Clear
                 <Tooltip.Arrow className="fill-black/90" />
               </Tooltip.Content>
