@@ -153,7 +153,7 @@ export default function FirebirdProgressChip() {
           </Tooltip.Trigger>
           {data.percent !== 100 && (
             <Tooltip.Portal>
-              <Tooltip.Content sideOffset={6} className="rounded bg-black/90 px-2 py-1 text-xs text-white shadow">
+              <Tooltip.Content sideOffset={6} className="z-50 rounded bg-black/90 px-2 py-1 text-xs text-white shadow">
                 <>Try recreating Stravinsky&apos;s epic finale from <em>The Firebird</em>! Click for checklist.</>
                 <Tooltip.Arrow className="fill-black/90" />
               </Tooltip.Content>
@@ -182,7 +182,7 @@ export default function FirebirdProgressChip() {
           aria-modal="true"
           tabIndex={-1}
           ref={dialogRef}
-          className="absolute z-20 -translate-x-1/2 mt-3 w-64 md:w-72 rounded-lg border border-gray-200 bg-white shadow-lg p-3 text-sm"
+          className="absolute z-50 -translate-x-1/2 mt-3 w-64 md:w-72 rounded-lg border border-gray-200 bg-white shadow-lg p-3 text-sm"
           style={{ left: anchorLeft != null ? `${anchorLeft}px` : '50%', top: '100%' }}
         >
           <div className="font-semibold mb-1 text-center"> <em>Firebird</em> checklist</div>
