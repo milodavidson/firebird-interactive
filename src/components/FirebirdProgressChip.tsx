@@ -106,7 +106,7 @@ export default function FirebirdProgressChip() {
   return (
   <div ref={containerRef} className="relative inline-flex items-center w-full">
       <Tooltip.Provider>
-        <Tooltip.Root delayDuration={0}>
+  <Tooltip.Root delayDuration={0}>
           <Tooltip.Trigger asChild>
             <button
               type="button"
@@ -116,6 +116,7 @@ export default function FirebirdProgressChip() {
               ref={triggerRef}
               className={`inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-2 sm:px-3 h-8 sm:h-9 md:h-9 xl:h-9 shrink-0 pressable w-full md:max-w-[540px] lg:max-w-[680px] xl:max-w-[820px] transition-transform duration-150 ease-out hover:scale-[1.02] hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-brand-navy)]`}
               onClick={() => setShowChecklist(v => !v)}
+              onFocus={() => { /* intentionally do nothing on focus */ }}
             >
               <img src="/icons/Firebird.png" alt="Firebird icon" className="h-4 w-auto md:h-5 xl:h-5" />
               <span ref={barRef} className="relative inline-flex items-center flex-1 min-w-0 md:min-w-[160px] h-1.5 md:h-2 xl:h-2 rounded-full bg-gray-200 overflow-hidden">

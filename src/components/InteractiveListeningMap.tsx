@@ -63,6 +63,8 @@ export default function InteractiveListeningMap() {
     }
   }, [])
 
+  // (removed defensive blur-on-mount; focus restoration should be handled safely by modals)
+
   return (
     <div className="mx-auto max-w-6xl p-4 min-h-svh flex flex-col">
       <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 bg-white border border-gray-300 rounded px-2 py-1">Skip to main content</a>

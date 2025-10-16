@@ -43,6 +43,7 @@ export default function FirebirdVideoModal({ open, onClose, triggerRef, videoEmb
   useEffect(() => {
     if (open) {
       prevActive.current = document.activeElement
+      try { console.debug('[FirebirdVideoModal] saved prevActive', prevActive.current) } catch (e) {}
       // focus the close button when opened
       setTimeout(() => closeRef.current?.focus(), 0)
       // trap focus via keydown handler
@@ -64,16 +65,30 @@ export default function FirebirdVideoModal({ open, onClose, triggerRef, videoEmb
           }
         }
       }
-      document.addEventListener('keydown', onKey)
-      return () => document.removeEventListener('keydown', onKey)
-    } else {
-      // restore focus when closed
-      if (prevActive.current instanceof HTMLElement) {
-        prevActive.current.focus()
-      } else if (triggerRef && triggerRef.current) {
-        // fallback to trigger ref
-        (triggerRef.current as HTMLElement).focus()
+      // Debugging: log focus transitions while modal is open to help trace stray focus calls
+      const onFocusIn = (e: FocusEvent) => {
+        try {
+          const t = e.target as HTMLElement | null
+          const label = t && t.getAttribute ? t.getAttribute('aria-label') : null
+          console.debug('[FirebirdVideoModal][focusin]', t, label, new Error().stack?.split('\n').slice(1,6).join('\n'))
+        } catch (err) {}
       }
+      document.addEventListener('focusin', onFocusIn)
+      document.addEventListener('keydown', onKey)
+      return () => {
+        document.removeEventListener('keydown', onKey)
+        document.removeEventListener('focusin', onFocusIn)
+      }
+    } else {
+      // restore focus when closed — only if we actually saved a previous active element.
+      // Do NOT focus the triggerRef on initial mount when the modal was never opened.
+      if (prevActive.current instanceof HTMLElement) {
+        try { console.debug('[FirebirdVideoModal] restoring focus to prevActive', prevActive.current) } catch (e) {}
+        prevActive.current.focus()
+        // clear so we don't restore again unexpectedly
+        prevActive.current = null
+      }
+      // otherwise noop
     }
   }, [open, onClose, triggerRef])
 

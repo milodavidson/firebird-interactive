@@ -19,8 +19,12 @@ const STORAGE_KEY = 'firebird_onboarding_seen_v1'
 
 export default function OnboardingTour() {
   const { parts, selectedInstrument } = usePartsStore()
-  const [step, setStep] = useState<Step | null>(1)
-  const [visible, setVisible] = useState(true)
+  // step is null until the user chooses to start the tour
+  const [step, setStep] = useState<Step | null>(null)
+  const [visible, setVisible] = useState(false)
+  // Modal shown on first-open (before the tour starts). If modalVisible is true,
+  // the tooltip-based tour remains hidden until the user clicks "Start".
+  const [modalVisible, setModalVisible] = useState(false)
   // Avoid rendering during SSR/hydration — only show after mounted on client.
   const [mounted, setMounted] = useState(false)
   useEffect(() => { setMounted(true) }, [])
@@ -34,10 +38,16 @@ export default function OnboardingTour() {
   // First-time only behavior: check localStorage and install backdoors after mount
   useEffect(() => {
     if (!mounted) return
-    // If already seen, hide the tour once at mount-time.
+    // If already seen, don't show the modal or tour. Otherwise show the modal
+    // on first open and keep the tour hidden until the user clicks Start.
     if (localStorage.getItem(STORAGE_KEY) === '1') {
       setVisible(false)
       setStep(null)
+      setModalVisible(false)
+    } else {
+      setVisible(false)
+      setStep(null)
+      setModalVisible(true)
     }
 
     // Expose a console backdoor to re-run the tour for testing.
@@ -47,7 +57,7 @@ export default function OnboardingTour() {
       setStep(1)
     }
 
-    ;(window as any).__showOnboarding = showOnboarding
+  ;(window as any).__showOnboarding = showOnboarding
 
     // Keyboard backdoor: Ctrl+Shift+O (attached at mount and removed on unmount)
     const keyHandler = (e: KeyboardEvent) => {
@@ -404,12 +414,13 @@ export default function OnboardingTour() {
         <Tooltip.Root>
           <Tooltip.Trigger asChild>
             <button
-              aria-label="Replay tips"
-              onClick={() => {
-                if (typeof window !== 'undefined') localStorage.removeItem(STORAGE_KEY)
-                setVisible(true)
-                setStep(1)
-              }}
+                aria-label="Replay tips"
+                onClick={() => {
+                  // Open the modal so users can choose to start or skip the tour.
+                  setModalVisible(true)
+                  setVisible(false)
+                  setStep(null)
+                }}
               style={{
                 position: 'fixed',
                 right: 12,
@@ -439,11 +450,50 @@ export default function OnboardingTour() {
         </Tooltip.Root>
       </Tooltip.Provider>
 
-      {/* Overlay highlight */}
-      <div style={style} data-tour-highlight className="z-50" />
+      {/* Overlay highlight: only show when the tooltip-based tour is visible */}
+      {visible && !modalVisible && adjustedRect && (
+        <div style={style} data-tour-highlight className="z-50" />
+      )}
+      {/* First-open modal (placeholder copy). Only shown when modalVisible is true. */}
+      {modalVisible && (
+        // Use a very high z-index to ensure the modal covers any tour highlights.
+        <div className="fixed inset-0 z-[100000] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/70" onClick={() => setModalVisible(false)} />
+          <div className="relative bg-white rounded-lg shadow-lg p-6 max-w-lg mx-4 z-[100001]">
+            {/* While the modal is open, hide any existing tour overlays/tooltips to avoid visual artifacts */}
+            <style>{`[data-tour-highlight],[data-tour-tooltip]{display:none !important}`}</style>
+            <h3 className="text-lg font-semibold mb-2">Welcome</h3>
+            <p className="text-sm text-gray-700 mb-4">Placeholder onboarding modal. Click Start to begin the interactive tour, or Skip to dismiss.</p>
+            <div className="flex justify-end gap-2">
+              <button
+                className="btn btn-outline btn-sm"
+                onClick={() => {
+                  // Persist skip so modal/tour won't show again
+                  if (typeof window !== 'undefined') localStorage.setItem(STORAGE_KEY, '1')
+                  setModalVisible(false)
+                  setVisible(false)
+                  setStep(null)
+                }}
+              >
+                Skip
+              </button>
+              <button
+                className="btn btn-primary btn-sm"
+                onClick={() => {
+                  setModalVisible(false)
+                  setVisible(true)
+                  setStep(1)
+                }}
+              >
+                Start tour
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Floating tooltip */}
-      {visible && adjustedRect && tooltipEl && (
-        <div ref={tooltipRef} style={{ position: 'fixed', left: tooltipEl.left, top: tooltipEl.top, zIndex: 60, width: tooltipEl.width }}>
+      {visible && !modalVisible && adjustedRect && tooltipEl && (
+        <div data-tour-tooltip ref={tooltipRef} style={{ position: 'fixed', left: tooltipEl.left, top: tooltipEl.top, zIndex: 60, width: tooltipEl.width }}>
           <div className="max-w-full p-3 bg-white rounded shadow-lg text-sm">
             <div className="font-semibold mb-1">
               {step === 1 && awaitingDrop ? 'Now drop or tap to assign it to a part.' : (
