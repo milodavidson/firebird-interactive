@@ -6,7 +6,7 @@ import { usePartsStore } from '@/hooks/usePartsStore'
 type Step = 1 | 2 | 3 | 4
 
 const STEP_COPY: Record<Step, string> = {
-  1: 'Drag or click an instrument to pick it up.',
+  1: 'Welcome to the Orchestra Sandbox! Drag or click an instrument to pick it up.',
   2: 'Start the music, change the tempo, or clear the grid.',
   3: 'Solo, mute, or remove instruments here. Instruments added while playing join in on the next loop.',
   4: 'This bar fills as your choices match Stravinsky\'s Firebird finale — see how close you can get!'
@@ -21,9 +21,40 @@ export default function OnboardingTour() {
   useEffect(() => { setMounted(true) }, [])
   const tooltipRef = useRef<HTMLDivElement | null>(null)
   const deferStep3OnAddRef = useRef(false)
+  const [deferStep3OnAdd, setDeferStep3OnAdd] = useState(false)
   const isolatedDontAdvanceRef = useRef(false)
   const [awaitingDrop, setAwaitingDrop] = useState(false)
   const prevAssignedCountRef = useRef<number>(parts.reduce((s, p) => s + p.assignedInstruments.length, 0))
+
+  // First-time only behavior: check localStorage and install backdoors after mount
+  useEffect(() => {
+    if (!mounted) return
+    const STORAGE_KEY = 'firebird_onboarding_seen_v1'
+    // If already seen, hide the tour once at mount-time.
+    if (localStorage.getItem(STORAGE_KEY) === '1') {
+      setVisible(false)
+      setStep(null)
+    }
+
+    // Expose a console backdoor to re-run the tour for testing.
+    ;(window as any).__showOnboarding = () => {
+      localStorage.removeItem(STORAGE_KEY)
+      setVisible(true)
+      setStep(1)
+    }
+
+    // Keyboard backdoor: Ctrl+Shift+O (attached at mount and removed on unmount)
+    const keyHandler = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.code === 'KeyO') {
+        e.preventDefault()
+        localStorage.removeItem(STORAGE_KEY)
+        setVisible(true)
+        setStep(1)
+      }
+    }
+    window.addEventListener('keydown', keyHandler)
+    return () => window.removeEventListener('keydown', keyHandler)
+  }, [mounted])
 
   // Handler for Next button that must branch for step 2
   function handleNext() {
@@ -44,6 +75,7 @@ export default function OnboardingTour() {
         // mark that we skipped step 3 and, when an instrument is later added,
         // show it as an isolated non-advancing step (don't auto-advance to 4)
         deferStep3OnAddRef.current = true
+        setDeferStep3OnAdd(true)
         isolatedDontAdvanceRef.current = true
         // ensure the tour stays visible when we jump to step 4
         setVisible(true)
@@ -146,6 +178,7 @@ export default function OnboardingTour() {
         const anyAssigned = parts.some(p => p.assignedInstruments.length > 0)
         if (!anyAssigned) {
           deferStep3OnAddRef.current = true
+          setDeferStep3OnAdd(true)
           isolatedDontAdvanceRef.current = true
           setVisible(true)
           setStep(4)
@@ -176,17 +209,8 @@ export default function OnboardingTour() {
     // Track assigned counts and, if we deferred step 3, show isolated step3 only when first instrument is added
     const currentCount = parts.reduce((s, p) => s + p.assignedInstruments.length, 0)
     const prevCount = prevAssignedCountRef.current
-    // If we're currently on the regular step 3 and the user removed the instrument(s),
-    // treat that like clicking Next: advance to step 4 and clear any deferred isolated-step3 flags.
-    if (step === 3 && !isolatedStep3Mode && prevCount > 0 && currentCount === 0) {
-      deferStep3OnAddRef.current = false
-      isolatedDontAdvanceRef.current = false
-      setStep(4)
-      prevAssignedCountRef.current = currentCount
-      return
-    }
     // If we deferred step 3 (no instrument at time of skipping) and count goes 0 -> 1, trigger isolated step3
-    if (deferStep3OnAddRef.current && prevCount === 0 && currentCount === 1) {
+  if ((deferStep3OnAddRef.current || deferStep3OnAdd) && prevCount === 0 && currentCount === 1) {
       // find the newly added instrument id
       let newId: string | null = null
       for (const p of parts) {
@@ -196,7 +220,8 @@ export default function OnboardingTour() {
         }
         if (newId) break
       }
-      deferStep3OnAddRef.current = false
+  deferStep3OnAddRef.current = false
+  setDeferStep3OnAdd(false)
       setIsolatedInstId(newId)
       // Wait for the element to finish layout/animation before showing the isolated tooltip so highlight lands correctly.
       if (newId) {
@@ -247,6 +272,18 @@ export default function OnboardingTour() {
         setStep(3)
       }
     }
+
+    // If we're currently on the regular step 3 and the user removed the instrument(s),
+    // treat that like clicking Next: advance to step 4 and clear any deferred isolated-step3 flags.
+    if (step === 3 && !isolatedStep3Mode && prevCount > 0 && currentCount === 0) {
+      deferStep3OnAddRef.current = false
+      setDeferStep3OnAdd(false)
+      isolatedDontAdvanceRef.current = false
+      setStep(4)
+      prevAssignedCountRef.current = currentCount
+      return
+    }
+
     // Update previous count
     prevAssignedCountRef.current = currentCount
   }, [parts])
@@ -296,42 +333,6 @@ export default function OnboardingTour() {
 
   // Prevent hydration mismatch: don't render anything until mounted on client
   if (!mounted) return null
-  // First-time only behavior: check localStorage to see if this tour has been seen.
-  // We only perform the localStorage check on the client (after mounted).
-  // Also provide an invisible backdoor to re-run the tour for testing:
-  //  - press Ctrl+Shift+O to clear the seen flag and show the tour
-  //  - call window.__showOnboarding() from the console to show it
-  if (typeof window !== 'undefined') {
-    const STORAGE_KEY = 'firebird_onboarding_seen_v1'
-    // Install a one-time effect-like check: if the tour was already seen, hide it
-    // unless explicitly re-triggered by the backdoor (keyboard or window function).
-    if (localStorage.getItem(STORAGE_KEY) === '1' && visible) {
-      setVisible(false)
-      setStep(null)
-    }
-
-    // Expose a console backdoor to re-run the tour for testing.
-    ;(window as any).__showOnboarding = () => {
-      localStorage.removeItem(STORAGE_KEY)
-      setVisible(true)
-      setStep(1)
-    }
-
-    // Keyboard backdoor: Ctrl+Shift+O
-    const keyHandler = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.shiftKey && e.code === 'KeyO') {
-        e.preventDefault()
-        localStorage.removeItem(STORAGE_KEY)
-        setVisible(true)
-        setStep(1)
-      }
-    }
-    window.addEventListener('keydown', keyHandler)
-    // Remove listener after a short timeout to avoid lingering in-app listeners
-    // but keep the window.__showOnboarding function available.
-    setTimeout(() => window.removeEventListener('keydown', keyHandler), 10000)
-  }
-
   if (!visible || !step) return null
 
   // Compute highlight rect (guard window/document for SSR)
