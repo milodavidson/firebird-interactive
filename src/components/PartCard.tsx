@@ -19,6 +19,7 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
   return (
     <motion.div
       layout
+      data-tour={`part-${part.id}`}
       transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.7 }}
       role="button"
       tabIndex={0}

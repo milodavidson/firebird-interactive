@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import PlayerControls from './PlayerControls'
 import PartsGrid from './PartsGrid'
 import InstrumentList from './InstrumentList'
+import OnboardingTour from './OnboardingTour'
 import { usePartsStore } from '@/hooks/usePartsStore'
 import { AudioScheduler } from '@/lib/audio/AudioScheduler'
 import { useAudioInspector } from '@/hooks/useAudioInspector'
@@ -84,11 +85,11 @@ export default function InteractiveListeningMap() {
       </header>
   <div className="grid grid-cols-1 gap-4 md:grid-cols-[320px,1fr] md:items-stretch flex-1 min-h-0" id="main" role="main">
         {/* Mobile: make the instruments panel sticky to the header. On md+ keep normal flow */}
-  <aside ref={asideRef} className="card p-4 h-full sticky top-20 z-30 md:sticky md:z-30 md:self-stretch self-start max-h-[calc(100vh-5rem)] overflow-auto">
+  <aside ref={asideRef} data-tour="instruments-list" className="card p-4 h-full sticky top-20 z-30 md:sticky md:z-30 md:self-stretch self-start max-h-[calc(100vh-5rem)] overflow-auto">
           <h2 className="mb-2 text-sm font-semibold text-gray-700">Instruments</h2>
           <InstrumentList />
         </aside>
-        <main className="card p-4 h-full overflow-auto min-h-0">
+        <main data-tour="parts-grid" className="card p-4 h-full overflow-auto min-h-0">
           <div className="h-full min-h-0">
             <PartsGrid />
           </div>
@@ -97,6 +98,7 @@ export default function InteractiveListeningMap() {
           </div> */}
         </main>
       </div>
+      <OnboardingTour />
     </div>
   )
 }

@@ -28,6 +28,7 @@ export default function InstrumentList() {
           <li key={inst.id}>
             <button
               draggable
+              data-instrument-id={inst.id}
               onDragStart={e => {
                 e.dataTransfer.setData('text/instrumentId', inst.id)
                 e.dataTransfer.setData('text/instrumentName', inst.name)
