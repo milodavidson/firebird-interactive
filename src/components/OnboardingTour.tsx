@@ -250,6 +250,49 @@ export default function OnboardingTour() {
     // Update previous count
     prevAssignedCountRef.current = currentCount
   }, [parts])
+  // Layout follow: when the target moves/resizes (window resize/scroll or element resize),
+  // force a re-render so the rect/tooltip are recalculated. We throttle via requestAnimationFrame.
+  const [layoutTick, setLayoutTick] = useState(0)
+  const rafRef = useRef<number | null>(null)
+  useEffect(() => {
+    if (!mounted) return
+    if (!visible) return
+    const el = targetEl
+    if (!el) return
+
+    const scheduleUpdate = () => {
+      if (rafRef.current != null) return
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = null
+        setLayoutTick(t => t + 1)
+      })
+    }
+
+    // ResizeObserver for the element itself
+    let ro: ResizeObserver | null = null
+    try {
+      ro = new ResizeObserver(scheduleUpdate)
+      ro.observe(el)
+    } catch (e) {
+      ro = null
+    }
+
+    // Global listeners as fallback for scroll/resize
+    window.addEventListener('resize', scheduleUpdate, { passive: true })
+    window.addEventListener('scroll', scheduleUpdate, { passive: true })
+
+    // Also schedule one initial update to snap overlay into place
+    scheduleUpdate()
+
+    return () => {
+      if (ro) ro.disconnect()
+      window.removeEventListener('resize', scheduleUpdate)
+      window.removeEventListener('scroll', scheduleUpdate)
+      if (rafRef.current != null) cancelAnimationFrame(rafRef.current)
+      rafRef.current = null
+    }
+  // Intentionally depend on targetEl/visible so observers reattach when it changes.
+  }, [mounted, visible, targetEl])
 
   // Prevent hydration mismatch: don't render anything until mounted on client
   if (!mounted) return null
