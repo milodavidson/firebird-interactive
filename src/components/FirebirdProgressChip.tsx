@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import FirebirdVideoModal from './FirebirdVideoModal'
 import { motion } from 'framer-motion'
 import * as Tooltip from '@radix-ui/react-tooltip'
 import { Check, X, Minus } from 'lucide-react'
@@ -19,12 +20,14 @@ const FIREBIRD_REQ: Record<PartId, string[]> = {
 export default function FirebirdProgressChip() {
   const { parts, tempo, play } = usePartsStore()
   const [showChecklist, setShowChecklist] = useState(false)
+  // We'll repurpose showChecklist to open a modal dialog with the YouTube clip
   const containerRef = useRef<HTMLDivElement | null>(null)
   const barRef = useRef<HTMLSpanElement | null>(null)
   const [anchorLeft, setAnchorLeft] = useState<number | null>(null)
   const [showShimmer, setShowShimmer] = useState(false)
   const triggerRef = useRef<HTMLButtonElement | null>(null)
   const dialogRef = useRef<HTMLDivElement | null>(null)
+  // remove mounted guard from this component; handled by modal
   const [reducedMotion, setReducedMotion] = useState(false)
 
   const data = useMemo(() => {
@@ -85,34 +88,17 @@ export default function FirebirdProgressChip() {
     prevPercent.current = data.percent
   }, [data.percent])
 
-  // Close checklist on outside click / ESC
+  // nothing for mounted here; modal handles its own portal mount
+
+  // Close modal on ESC
   useEffect(() => {
     if (!showChecklist) return
-    const onDoc = (e: MouseEvent) => {
-      const el = containerRef.current
-      if (el && !el.contains(e.target as Node)) setShowChecklist(false)
-    }
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setShowChecklist(false) }
-    document.addEventListener('mousedown', onDoc)
     document.addEventListener('keydown', onKey)
-    return () => { document.removeEventListener('mousedown', onDoc); document.removeEventListener('keydown', onKey) }
+    return () => { document.removeEventListener('keydown', onKey) }
   }, [showChecklist])
 
-  // Position checklist centered under the progress bar
-  useEffect(() => {
-    if (!showChecklist) return
-    const computeAnchor = () => {
-      const cont = containerRef.current
-      const bar = barRef.current
-      if (!cont || !bar) return
-      const c = cont.getBoundingClientRect()
-      const b = bar.getBoundingClientRect()
-      setAnchorLeft(b.left - c.left + b.width / 2)
-    }
-    computeAnchor()
-    window.addEventListener('resize', computeAnchor)
-    return () => window.removeEventListener('resize', computeAnchor)
-  }, [showChecklist])
+  // Anchor not needed for centered modal, but keep anchorLeft state for legacy positioning if required later
 
   // Progress bar color shifts
   const color = data.percent >= 100 ? 'bg-[var(--color-brand-red)]' : 'bg-[var(--color-brand-navy)]'
@@ -174,54 +160,12 @@ export default function FirebirdProgressChip() {
         </div>
       )}
 
-      {showChecklist && (
-        <div
-          role="dialog"
-          aria-label="Firebird checklist"
-          id="firebird-checklist"
-          aria-modal="true"
-          tabIndex={-1}
-          ref={dialogRef}
-          className="absolute z-50 -translate-x-1/2 mt-3 w-64 md:w-72 rounded-lg border border-gray-200 bg-white shadow-lg p-3 text-sm"
-          style={{ left: anchorLeft != null ? `${anchorLeft}px` : '50%', top: '100%' }}
-        >
-          <div className="font-semibold mb-1 text-center"> <em>Firebird</em> checklist</div>
-          <ul className="space-y-1 text-left inline-block">
-            <li className="flex items-center gap-2">
-              {data.tempoOk ? <Check size={14} /> : <X size={14} />}
-              <span className="capitalize min-w-[4.5rem]">Tempo:</span>
-              <span>Fast</span>
-            </li>
-          </ul>
-          <div className="mt-2 font-semibold text-center">Parts</div>
-          <ul className="mt-1 space-y-1 text-left inline-block">
-            {data.presenceDetails.map((d, i) => (
-              <li key={`${d.part}-${d.inst}-${i}`} className="flex items-center gap-2">
-                {d.status === 'loud' ? <Check size={14} /> : d.status === 'present-not-loud' ? <Minus size={14} /> : <X size={14} />}
-                <span className="capitalize min-w-[4.5rem]">{d.part}:</span>
-                <span className="capitalize">{nameById[d.inst] || d.inst}</span>
-                {d.status === 'present-not-loud' && <span className="text-gray-600">(make it loud!)</span>}
-              </li>
-            ))}
-          </ul>
-          {/* Extras section per part, shown only if there are any extras */}
-          {(['melody','harmony','rhythm','texture'] as PartId[]).some(p => (data.extrasByPart[p] || []).length > 0) && (
-            <div className="mt-3">
-              <div className="font-semibold mb-1">Extras (don’t affect score)</div>
-              <ul className="space-y-1 text-left inline-block text-gray-600">
-                {(['melody','harmony','rhythm','texture'] as PartId[]).map(p => (
-                  (data.extrasByPart[p] || []).length > 0 ? (
-                    <li key={`extras-${p}`} className="flex items-start gap-2">
-                      <span className="capitalize min-w-[4.5rem]">{p}:</span>
-                      <span className="capitalize">{data.extrasByPart[p].map(id => nameById[id] || id).join(', ')}</span>
-                    </li>
-                  ) : null
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      )}
+      <FirebirdVideoModal
+        open={showChecklist}
+        onClose={() => setShowChecklist(false)}
+        triggerRef={triggerRef}
+        videoEmbedUrl={"https://www.youtube.com/embed/QhAn7ZmI8_s?si=ydUik_FfRlu8FYpE&clip=UgkxPSglW_-ND9jPHMrToo5m36aQkVha3K9k&clipt=EOTXRxi3oEg"}
+      />
     </div>
   )
 }
