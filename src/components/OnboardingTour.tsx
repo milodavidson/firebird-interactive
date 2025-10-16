@@ -1,16 +1,21 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import * as Tooltip from '@radix-ui/react-tooltip'
+import { HelpCircle } from 'lucide-react'
 import { usePartsStore } from '@/hooks/usePartsStore'
 
 type Step = 1 | 2 | 3 | 4
 
 const STEP_COPY: Record<Step, string> = {
-  1: 'Welcome to the Orchestra Sandbox! Drag or click an instrument to pick it up.',
+  1: 'Welcome to the Orchestra Sandbox! Drag or tap an instrument to pick it up.',
   2: 'Start the music, change the tempo, or clear the grid.',
-  3: 'Solo, mute, or remove instruments here. Instruments added while playing join in on the next loop.',
+  3: 'Solo, mute, set dynamics, or remove instruments — new ones join on the next loop.',
   4: 'This bar fills as your choices match Stravinsky\'s Firebird finale — see how close you can get!'
 }
+
+// Persistent key for first-time-only behavior
+const STORAGE_KEY = 'firebird_onboarding_seen_v1'
 
 export default function OnboardingTour() {
   const { parts, selectedInstrument } = usePartsStore()
@@ -29,7 +34,6 @@ export default function OnboardingTour() {
   // First-time only behavior: check localStorage and install backdoors after mount
   useEffect(() => {
     if (!mounted) return
-    const STORAGE_KEY = 'firebird_onboarding_seen_v1'
     // If already seen, hide the tour once at mount-time.
     if (localStorage.getItem(STORAGE_KEY) === '1') {
       setVisible(false)
@@ -37,19 +41,19 @@ export default function OnboardingTour() {
     }
 
     // Expose a console backdoor to re-run the tour for testing.
-    ;(window as any).__showOnboarding = () => {
+    const showOnboarding = () => {
       localStorage.removeItem(STORAGE_KEY)
       setVisible(true)
       setStep(1)
     }
 
+    ;(window as any).__showOnboarding = showOnboarding
+
     // Keyboard backdoor: Ctrl+Shift+O (attached at mount and removed on unmount)
     const keyHandler = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.shiftKey && e.code === 'KeyO') {
         e.preventDefault()
-        localStorage.removeItem(STORAGE_KEY)
-        setVisible(true)
-        setStep(1)
+        showOnboarding()
       }
     }
     window.addEventListener('keydown', keyHandler)
@@ -333,7 +337,10 @@ export default function OnboardingTour() {
 
   // Prevent hydration mismatch: don't render anything until mounted on client
   if (!mounted) return null
-  if (!visible || !step) return null
+  // Note: we intentionally do NOT early-return when the tour is hidden because
+  // we render a small fixed "Replay tutorial" button that must always be
+  // available once mounted. The overlay/tooltip themselves still only render
+  // when `visible` and `step` are set.
 
   // Compute highlight rect (guard window/document for SSR)
   const rect = (typeof window !== 'undefined' && targetEl) ? targetEl.getBoundingClientRect() : null
@@ -392,19 +399,59 @@ export default function OnboardingTour() {
 
   return (
     <div aria-hidden="false">
+      {/* Replay icon with Radix tooltip (short delay) */}
+      <Tooltip.Provider delayDuration={100}>
+        <Tooltip.Root>
+          <Tooltip.Trigger asChild>
+            <button
+              aria-label="Replay tips"
+              onClick={() => {
+                if (typeof window !== 'undefined') localStorage.removeItem(STORAGE_KEY)
+                setVisible(true)
+                setStep(1)
+              }}
+              style={{
+                position: 'fixed',
+                right: 12,
+                bottom: 12,
+                zIndex: 70,
+                background: 'rgba(255,255,255,0.95)',
+                border: '1px solid rgba(0,0,0,0.06)',
+                width: 34,
+                height: 34,
+                padding: 0,
+                borderRadius: 9999,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+                opacity: 0.95,
+                cursor: 'pointer'
+              }}
+            >
+              <HelpCircle size={16} aria-hidden />
+            </button>
+          </Tooltip.Trigger>
+          <Tooltip.Content sideOffset={6} align="center" style={{ background: 'rgba(0,0,0,0.85)', color: '#fff', padding: '6px 8px', borderRadius: 6, fontSize: 12, zIndex: 80 }}>
+            Replay tips
+            <Tooltip.Arrow offset={6} style={{ fill: 'rgba(0,0,0,0.85)' }} />
+          </Tooltip.Content>
+        </Tooltip.Root>
+      </Tooltip.Provider>
+
       {/* Overlay highlight */}
       <div style={style} data-tour-highlight className="z-50" />
       {/* Floating tooltip */}
-      {adjustedRect && tooltipEl && (
+      {visible && adjustedRect && tooltipEl && (
         <div ref={tooltipRef} style={{ position: 'fixed', left: tooltipEl.left, top: tooltipEl.top, zIndex: 60, width: tooltipEl.width }}>
           <div className="max-w-full p-3 bg-white rounded shadow-lg text-sm">
             <div className="font-semibold mb-1">
-              {step === 1 && awaitingDrop ? 'Now drop or click to assign it to a part.' : (
+              {step === 1 && awaitingDrop ? 'Now drop or tap to assign it to a part.' : (
                 step === 4 ? (
                   // Render Firebird in italics without using raw HTML
                   <>This bar fills as your choices match Stravinsky's <em>Firebird</em> finale — see how close you can get!</>
                 ) : (
-                  STEP_COPY[step]
+                  STEP_COPY[step as Step]
                 )
               )}
             </div>

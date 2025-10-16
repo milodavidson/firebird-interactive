@@ -22,7 +22,7 @@ export default function InstrumentList() {
 
   return (
     <div className="flex flex-col">
-      <p className="text-xs text-gray-600">Drag to a part or tap to select, then tap a part.</p>
+      <p className="text-xs text-gray-600">Drag or tap to select, then tap a part.</p>
       <ul className="mt-3 grid grid-cols-2 gap-3 md:block md:space-y-3 overflow-visible pt-1">
         {INSTRUMENTS.map(inst => (
           <li key={inst.id}>

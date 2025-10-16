@@ -108,7 +108,7 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
           style={{ overflow: 'hidden' }}
           className={`text-sm text-gray-600 ${isEmpty ? '' : 'pointer-events-none'}`}
         >
-          Drop or tap to add
+          Assign up to 4 instruments here.
         </motion.li>
         {/* Items animate independently; only removed item exits */}
         <AnimatePresence initial={false} mode="sync">
