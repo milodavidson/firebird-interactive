@@ -121,6 +121,10 @@ export default function OnboardingTour() {
     if (!modalVisible) return
     const dialog = document.querySelector('[role="dialog"][aria-labelledby="onboarding-title"]') as HTMLElement | null
     if (!dialog) return
+    // Hide main content from assistive tech while modal is open
+    const rootMain = document.getElementById('main')
+    const prevAria = rootMain?.getAttribute('aria-hidden') ?? null
+    if (rootMain) rootMain.setAttribute('aria-hidden', 'true')
     const previous = document.activeElement as HTMLElement | null
     const release = trapFocus(dialog)
     const onKey = (e: KeyboardEvent) => {
@@ -132,6 +136,11 @@ export default function OnboardingTour() {
     return () => {
       release()
       document.removeEventListener('keydown', onKey)
+      // restore aria-hidden on main
+      if (rootMain) {
+        if (prevAria == null) rootMain.removeAttribute('aria-hidden')
+        else rootMain.setAttribute('aria-hidden', prevAria)
+      }
       if (previous && typeof previous.focus === 'function') previous.focus()
     }
   }, [modalVisible])

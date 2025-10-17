@@ -55,6 +55,10 @@ export default function FirebirdVideoModal({ open, onClose, triggerRef, videoEmb
   // focus management: save & restore, and focus close button on open
   useEffect(() => {
     if (open) {
+      // Hide main content from assistive tech while modal is open
+      const rootMain = document.getElementById('main')
+      const prevAria = rootMain?.getAttribute('aria-hidden') ?? null
+      if (rootMain) rootMain.setAttribute('aria-hidden', 'true')
       prevActive.current = document.activeElement
       try { console.debug('[FirebirdVideoModal] saved prevActive', prevActive.current) } catch (e) {}
       // focus the close button when opened
@@ -102,6 +106,11 @@ export default function FirebirdVideoModal({ open, onClose, triggerRef, videoEmb
           release()
           document.removeEventListener('keydown', onKey)
           window.removeEventListener('message', onMessage)
+          // restore aria-hidden on main
+          if (rootMain) {
+            if (prevAria == null) rootMain.removeAttribute('aria-hidden')
+            else rootMain.setAttribute('aria-hidden', prevAria)
+          }
         }
       }
     } else {

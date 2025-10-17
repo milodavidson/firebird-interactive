@@ -151,6 +151,11 @@ export function useSpaceToToggle(onToggle: () => void) {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.code !== 'Space') return
+      // If a modal dialog is open, do not run the global space handler so
+      // modal-local handlers can take precedence.
+      const modal = document.querySelector('[role="dialog"][aria-modal="true"]')
+      if (modal) return
+
       const target = e.target as HTMLElement | null
       const tag = (target?.tagName || '').toLowerCase()
       if (tag === 'input' || tag === 'textarea' || tag === 'select' || target?.isContentEditable) return
