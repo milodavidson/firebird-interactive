@@ -18,6 +18,37 @@ const STEP_COPY: Record<Step, string> = {
 // Persistent key for first-time-only behavior
 const STORAGE_KEY = 'firebird_onboarding_seen_v1'
 
+// Safe wrappers for localStorage access. Accessing localStorage can throw
+// in some embedded contexts (cross-origin iframes, blocked storage, etc.).
+// These wrappers catch errors and return null/ignore writes so the UI still
+// functions even when storage is unavailable.
+const safeGetItem = (key: string) => {
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) return null
+    return window.localStorage.getItem(key)
+  } catch (e) {
+    return null
+  }
+}
+
+const safeSetItem = (key: string, value: string) => {
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) return
+    window.localStorage.setItem(key, value)
+  } catch (e) {
+    // ignore failures
+  }
+}
+
+const safeRemoveItem = (key: string) => {
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) return
+    window.localStorage.removeItem(key)
+  } catch (e) {
+    // ignore failures
+  }
+}
+
 export default function OnboardingTour() {
   const { parts, selectedInstrument } = usePartsStore()
   // step is null until the user chooses to start the tour
@@ -41,7 +72,7 @@ export default function OnboardingTour() {
     if (!mounted) return
     // If already seen, don't show the modal or tour. Otherwise show the modal
     // on first open and keep the tour hidden until the user clicks Start.
-    if (localStorage.getItem(STORAGE_KEY) === '1') {
+  if (safeGetItem(STORAGE_KEY) === '1') {
       setVisible(false)
       setStep(null)
       setModalVisible(false)
@@ -61,7 +92,7 @@ export default function OnboardingTour() {
 
     const resetOnboarding = () => {
       // Clear the seen flag and reopen the intro modal so the user can choose again
-      localStorage.removeItem(STORAGE_KEY)
+  safeRemoveItem(STORAGE_KEY)
       setModalVisible(true)
       setVisible(false)
       setStep(null)
@@ -545,7 +576,7 @@ export default function OnboardingTour() {
                 className="btn btn-outline btn-sm"
                 onClick={() => {
                   // Persist skip so modal/tour won't show again
-                  if (typeof window !== 'undefined') localStorage.setItem(STORAGE_KEY, '1')
+                  if (typeof window !== 'undefined') safeSetItem(STORAGE_KEY, '1')
                   setModalVisible(false)
                   setVisible(false)
                   setStep(null)
@@ -586,7 +617,7 @@ export default function OnboardingTour() {
                 className={isolatedStep3Mode ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm'}
                 onClick={() => {
                   // Persist seen flag and Close behavior differs if this is isolated mode
-                  if (typeof window !== 'undefined') localStorage.setItem('firebird_onboarding_seen_v1', '1')
+                  if (typeof window !== 'undefined') safeSetItem(STORAGE_KEY, '1')
                   if (isolatedStep3Mode) {
                     setIsolatedStep3Mode(false)
                     setIsolatedInstId(null)
@@ -600,7 +631,7 @@ export default function OnboardingTour() {
               {!isolatedStep3Mode && (
                 <button className="btn btn-primary btn-sm" onClick={() => {
                   // On Finish persist the seen flag
-                  if (step === 4 && typeof window !== 'undefined') localStorage.setItem('firebird_onboarding_seen_v1', '1')
+                  if (step === 4 && typeof window !== 'undefined') safeSetItem(STORAGE_KEY, '1')
                   handleNext()
                 }}>{step === 4 ? 'Finish' : 'Next'}</button>
               )}
