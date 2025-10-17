@@ -572,7 +572,7 @@ export default function OnboardingTour() {
         <div data-tour-tooltip ref={tooltipRef} style={{ position: 'fixed', left: tooltipEl.left, top: tooltipEl.top, zIndex: 60, width: tooltipEl.width }}>
           <div className="max-w-full p-3 bg-white rounded shadow-lg text-sm">
             <div className="font-semibold mb-1">
-              {step === 1 && awaitingDrop ? 'Now drop or tap to assign it to a part.' : (
+              {step === 1 && awaitingDrop ? 'Drop or tap to assign it to a part.' : (
                 step === 4 ? (
                   // Render Firebird in italics without using raw HTML
                   <>This bar fills as your choices match Stravinsky's <em>Firebird</em> finale — click to watch it performed, and see how close you can get!</>
