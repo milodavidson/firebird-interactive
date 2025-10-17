@@ -467,12 +467,12 @@ export default function OnboardingTour() {
       {/* First-open modal (placeholder copy). Only shown when modalVisible is true. */}
       {modalVisible && (
         // Use a very high z-index to ensure the modal covers any tour highlights.
-        <div className="fixed inset-0 z-[100000] flex items-center justify-center">
+        <div className="fixed inset-0 z-[100000] flex items-center justify-center" aria-hidden={modalVisible ? 'false' : 'true'}>
           <div className="absolute inset-0 bg-black/70" onClick={() => setModalVisible(false)} />
-          <div className="relative bg-white rounded-lg shadow-lg p-6 max-w-lg mx-4 z-[100001]">
+          <div role="dialog" aria-modal="true" aria-labelledby="onboarding-title" className="relative bg-white rounded-lg shadow-lg p-6 max-w-lg mx-4 z-[100001]">
             {/* While the modal is open, hide any existing tour overlays/tooltips to avoid visual artifacts */}
             <style>{`[data-tour-highlight],[data-tour-tooltip]{display:none !important}`}</style>
-            <h3 className="text-lg font-semibold mb-2">Welcome to the Orchestra Sandbox!</h3>
+            <h3 id="onboarding-title" className="text-lg font-semibold mb-2">Welcome to the Orchestra Sandbox!</h3>
             <p className="text-sm text-gray-700 mb-4">Experiment with instruments, tempo, and dynamics to craft your own orchestral version of Stravinsky’s finale to <em>The Firebird</em> — or just see what sounds you can create.</p>
             <div className="flex justify-end gap-2">
               <button
