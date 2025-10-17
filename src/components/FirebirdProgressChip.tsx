@@ -223,7 +223,7 @@ export default function FirebirdProgressChip() {
         open={showChecklist}
         onClose={() => setShowChecklist(false)}
         triggerRef={triggerRef}
-        videoEmbedUrl={"https://www.youtube.com/embed/QhAn7ZmI8_s?si=ydUik_FfRlu8FYpE&clip=UgkxPSglW_-ND9jPHMrToo5m36aQkVha3K9k&clipt=EOTXRxi3oEg"}
+        videoEmbedUrl={"https://www.youtube.com/embed/QhAn7ZmI8_s?si=WB2kKQ5oi6gNHg0L&clip=UgkxhvkBP9dKGC_6-4hjijFG52Ft3dYT5dgr&clipt=EIDXRxi3oEg"}
       />
     </div>
   )
