@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { INSTRUMENTS } from '@/lib/instruments'
+import { announcePolite } from '@/lib/a11y/announce'
 import { usePartsStore } from '@/hooks/usePartsStore'
 import { useAssignments } from '@/hooks/useAssignments'
 
@@ -23,6 +24,7 @@ export default function InstrumentList() {
   return (
     <div className="flex flex-col">
       <p className="text-xs text-gray-600">Drag or tap to select, then tap a part.</p>
+      <p className="sr-only">Keyboard: press Enter to select an instrument, then move to a part and press Enter to assign. Press Escape to cancel selection.</p>
       <ul className="mt-3 grid grid-cols-2 gap-3 md:block md:space-y-3 overflow-visible pt-1">
         {INSTRUMENTS.map(inst => (
           <li key={inst.id}>
@@ -39,6 +41,7 @@ export default function InstrumentList() {
                   setSelectedInstrument(null)
                 } else {
                   setSelectedInstrument({ id: inst.id, name: inst.name })
+                  announcePolite(`${inst.name} selected. Navigate to a part and press Enter to assign.`)
                 }
               }}
               aria-pressed={selectedInstrument?.id === inst.id}

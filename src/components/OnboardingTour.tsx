@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { trapFocus } from '@/lib/a11y/focusTrap'
 import * as Tooltip from '@radix-ui/react-tooltip'
 import { HelpCircle } from 'lucide-react'
 import { usePartsStore } from '@/hooks/usePartsStore'
@@ -114,6 +115,26 @@ export default function OnboardingTour() {
   // Isolated mini-step 3 shown after the initial tour skipped step3 (deferred)
   const [isolatedStep3Mode, setIsolatedStep3Mode] = useState(false)
   const [isolatedInstId, setIsolatedInstId] = useState<string | null>(null)
+
+  // Trap focus when the modal is visible and restore focus when closed.
+  useEffect(() => {
+    if (!modalVisible) return
+    const dialog = document.querySelector('[role="dialog"][aria-labelledby="onboarding-title"]') as HTMLElement | null
+    if (!dialog) return
+    const previous = document.activeElement as HTMLElement | null
+    const release = trapFocus(dialog)
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setModalVisible(false)
+      }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => {
+      release()
+      document.removeEventListener('keydown', onKey)
+      if (previous && typeof previous.focus === 'function') previous.focus()
+    }
+  }, [modalVisible])
 
   // Compute target element for each step
   const targetEl = useMemo(() => {

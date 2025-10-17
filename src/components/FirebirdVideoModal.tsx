@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { X } from 'lucide-react'
+import { trapFocus } from '@/lib/a11y/focusTrap'
 
 type Props = {
   open: boolean
@@ -46,49 +47,24 @@ export default function FirebirdVideoModal({ open, onClose, triggerRef, videoEmb
       try { console.debug('[FirebirdVideoModal] saved prevActive', prevActive.current) } catch (e) {}
       // focus the close button when opened
       setTimeout(() => closeRef.current?.focus(), 0)
-      // trap focus via keydown handler
-      const onKey = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') onClose()
-        if (e.key === 'Tab') {
-          const dialog = dialogRef.current
-          if (!dialog) return
-          const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(
-            'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
-          )).filter(el => !el.hasAttribute('disabled') && el.offsetParent !== null)
-          if (focusable.length === 0) return
-          const first = focusable[0]
-          const last = focusable[focusable.length - 1]
-          if (!e.shiftKey && document.activeElement === last) {
-            e.preventDefault(); first.focus()
-          } else if (e.shiftKey && document.activeElement === first) {
-            e.preventDefault(); last.focus()
-          }
+      // use trapFocus helper on the dialog
+      const dialog = dialogRef.current
+      if (dialog) {
+        const release = trapFocus(dialog)
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+        document.addEventListener('keydown', onKey)
+        return () => {
+          release()
+          document.removeEventListener('keydown', onKey)
         }
-      }
-      // Debugging: log focus transitions while modal is open to help trace stray focus calls
-      const onFocusIn = (e: FocusEvent) => {
-        try {
-          const t = e.target as HTMLElement | null
-          const label = t && t.getAttribute ? t.getAttribute('aria-label') : null
-          console.debug('[FirebirdVideoModal][focusin]', t, label, new Error().stack?.split('\n').slice(1,6).join('\n'))
-        } catch (err) {}
-      }
-      document.addEventListener('focusin', onFocusIn)
-      document.addEventListener('keydown', onKey)
-      return () => {
-        document.removeEventListener('keydown', onKey)
-        document.removeEventListener('focusin', onFocusIn)
       }
     } else {
       // restore focus when closed — only if we actually saved a previous active element.
-      // Do NOT focus the triggerRef on initial mount when the modal was never opened.
       if (prevActive.current instanceof HTMLElement) {
         try { console.debug('[FirebirdVideoModal] restoring focus to prevActive', prevActive.current) } catch (e) {}
         prevActive.current.focus()
-        // clear so we don't restore again unexpectedly
         prevActive.current = null
       }
-      // otherwise noop
     }
   }, [open, onClose, triggerRef])
 

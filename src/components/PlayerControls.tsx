@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { usePartsStore } from '@/hooks/usePartsStore'
 import { audioService } from '@/lib/audio/AudioService'
 import { AudioScheduler } from '@/lib/audio/AudioScheduler'
@@ -8,6 +8,7 @@ import { useSpaceToggle } from '@/hooks/useSpaceToggle'
 import LoopProgress from './LoopProgress'
 import { Eraser } from 'lucide-react'
 import * as Tooltip from '@radix-ui/react-tooltip'
+import { announcePolite } from '@/lib/a11y/announce'
 
 type Props = { scheduler?: AudioScheduler }
 
@@ -28,6 +29,7 @@ export default function PlayerControls({ scheduler }: Props = {}) {
       setPlay(true)
       transportStartRef.current = audioService.audioCtx.currentTime
       if (scheduler) scheduler.scheduleLoopStartIfNeeded()
+      announcePolite('Playback started')
     } else {
       setPlay(false)
       // Reset loop transport so progress ring returns to 0 on pause
@@ -42,6 +44,7 @@ export default function PlayerControls({ scheduler }: Props = {}) {
           ai.isLoading ? { ...ai, isLoading: false, queueStartTime: undefined, queueScheduleTime: undefined, queueTimeRemaining: undefined } : ai
         ))
       })))
+      announcePolite('Playback paused')
     }
   }, [hasAnyInstruments, play, scheduler, setPlay, transportStartRef])
 
@@ -68,6 +71,7 @@ export default function PlayerControls({ scheduler }: Props = {}) {
       setTempo(t)
       if (play && scheduler) {
         await scheduler.scheduleTempoSwitch(t)
+        announcePolite(`Tempo set to ${t}`)
       }
     },
     [play, scheduler, setTempo]
