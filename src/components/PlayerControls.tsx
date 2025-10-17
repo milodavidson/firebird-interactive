@@ -89,7 +89,7 @@ export default function PlayerControls({ scheduler }: Props = {}) {
 
   return (
     <div data-tour="player-controls" className="grid grid-cols-[auto,1fr,auto] items-center w-full md:w-auto gap-2 sm:gap-3 md:gap-4 py-2">
-      <div className="justify-self-center md:justify-self-start translate-y-[4px]">
+      <div className="justify-self-center md:justify-self-start translate-y-[4px] md:translate-x-[4px]">
         <LoopProgress size={56} onToggle={onToggle} disabled={!hasAnyInstruments} />
       </div>
       <div className="flex items-center justify-center">

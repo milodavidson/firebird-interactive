@@ -29,6 +29,28 @@ export default function FirebirdProgressChip() {
   const dialogRef = useRef<HTMLDivElement | null>(null)
   // remove mounted guard from this component; handled by modal
   const [reducedMotion, setReducedMotion] = useState(false)
+  const [computedMaxWidth, setComputedMaxWidth] = useState<number | null>(null)
+
+  // Respect user preference for reduced motion
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('matchMedia' in window)) return
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const set = () => setReducedMotion(!!mq.matches)
+    set()
+    try {
+      mq.addEventListener('change', set)
+    } catch (e) {
+      // Safari fallback
+      // @ts-ignore
+      mq.addListener && mq.addListener(set)
+    }
+    return () => {
+      try { mq.removeEventListener('change', set) } catch (e) { /* fallback */ }
+      // @ts-ignore
+      mq.removeListener && mq.removeListener(set)
+    }
+  }, [])
+
 
   const data = useMemo(() => {
     // Revised scoring: 1 point for each required instrument present (9),
@@ -103,6 +125,41 @@ export default function FirebirdProgressChip() {
   // Progress bar color shifts
   const color = data.percent >= 100 ? 'bg-[var(--color-brand-red)]' : 'bg-[var(--color-brand-navy)]'
 
+  // Compute a smooth max-width based on viewport width so we avoid hard jumps
+  // at Tailwind's lg/xl breakpoints. We interpolate between the previous
+  // sizes: 540 @768, 680 @1024, 820 @1280.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    let raf = 0
+    const compute = () => {
+      const w = window.innerWidth
+      let maxW: number | null = null
+      if (w < 768) {
+        maxW = null
+      } else if (w >= 1280) {
+        maxW = 820
+      } else if (w >= 1024) {
+        const t = (w - 1024) / (1280 - 1024)
+        maxW = 680 + t * (820 - 680)
+      } else {
+        // 768 <= w < 1024
+        const t = (w - 768) / (1024 - 768)
+        maxW = 540 + t * (680 - 540)
+      }
+      setComputedMaxWidth(maxW ? Math.round(maxW) : null)
+    }
+    const handler = () => {
+      if (raf) cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(compute)
+    }
+    compute()
+    window.addEventListener('resize', handler)
+    return () => {
+      window.removeEventListener('resize', handler)
+      if (raf) cancelAnimationFrame(raf)
+    }
+  }, [])
+
   return (
   <div ref={containerRef} className="relative inline-flex items-center w-full">
       <Tooltip.Provider>
@@ -114,9 +171,10 @@ export default function FirebirdProgressChip() {
               aria-expanded={showChecklist}
               aria-controls="firebird-checklist"
               ref={triggerRef}
-              className={`inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-2 sm:px-3 h-8 sm:h-9 md:h-9 xl:h-9 shrink-0 pressable w-full md:max-w-[540px] lg:max-w-[680px] xl:max-w-[820px] transition-transform duration-150 ease-out hover:scale-[1.02] hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-brand-navy)]`}
+              className={`inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-2 sm:px-3 h-8 sm:h-9 md:h-9 xl:h-9 shrink-0 pressable w-full transition-transform duration-150 ease-out hover:scale-[1.02] hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-brand-navy)]`}
               onClick={() => setShowChecklist(v => !v)}
               onFocus={() => { /* intentionally do nothing on focus */ }}
+              style={computedMaxWidth ? { maxWidth: `${computedMaxWidth}px`, transition: 'max-width 220ms ease' } : undefined}
             >
               <img src="/icons/Firebird.png" alt="Firebird icon" className="h-4 w-auto md:h-5 xl:h-5" />
               <span ref={barRef} className="relative inline-flex items-center flex-1 min-w-0 md:min-w-[160px] h-1.5 md:h-2 xl:h-2 rounded-full bg-gray-200 overflow-hidden">

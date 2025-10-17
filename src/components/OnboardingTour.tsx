@@ -368,9 +368,40 @@ export default function OnboardingTour() {
       ro = null
     }
 
-    // Global listeners as fallback for scroll/resize
+    // Attach listeners to the element's scrollable ancestors (so the highlight
+    // follows elements that scroll inside containers, not only page scroll).
+    const getScrollParents = (node: Element | null) => {
+      const parents: (Element | Window)[] = []
+      let cur: Element | null = node
+      while (cur) {
+        try {
+          const style = getComputedStyle(cur)
+          const overflowY = style.overflowY
+          const isScrollable = overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay'
+          if (isScrollable) parents.push(cur)
+        } catch (e) {
+          // ignore
+        }
+        cur = cur.parentElement
+      }
+      parents.push(window)
+      return parents
+    }
+
+    const scrollParents = getScrollParents(el)
+    const attached: Array<{target: Element | Window, handler: EventListener}> = []
+    for (const p of scrollParents) {
+      const handler = scheduleUpdate as EventListener
+      try {
+        ;(p as any).addEventListener('scroll', handler, { passive: true })
+        attached.push({ target: p, handler })
+      } catch (e) {
+        // ignore attach failures
+      }
+    }
+
+    // Window resize is still important
     window.addEventListener('resize', scheduleUpdate, { passive: true })
-    window.addEventListener('scroll', scheduleUpdate, { passive: true })
 
     // Also schedule one initial update to snap overlay into place
     scheduleUpdate()
@@ -378,7 +409,9 @@ export default function OnboardingTour() {
     return () => {
       if (ro) ro.disconnect()
       window.removeEventListener('resize', scheduleUpdate)
-      window.removeEventListener('scroll', scheduleUpdate)
+      for (const a of attached) {
+        try { (a.target as any).removeEventListener('scroll', a.handler) } catch (e) {}
+      }
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current)
       rafRef.current = null
     }
@@ -407,8 +440,11 @@ export default function OnboardingTour() {
 
   const style: React.CSSProperties = adjustedRect ? {
     position: 'fixed',
-    left: adjustedRect.left + (typeof window !== 'undefined' ? window.scrollX : 0),
-    top: adjustedRect.top + (typeof window !== 'undefined' ? window.scrollY : 0),
+    // getBoundingClientRect() returns viewport-relative coordinates. For a
+    // fixed-position overlay we should use those directly so the highlight
+    // follows sticky elements and container scrolls correctly.
+    left: adjustedRect.left,
+    top: adjustedRect.top,
     width: adjustedRect.width,
     height: adjustedRect.height,
     boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)',
@@ -429,20 +465,20 @@ export default function OnboardingTour() {
       // If highlighting instruments list, place to its right; if highlighting parts-grid, place to its left
       const isInstrumentsList = !!document.querySelector('[data-tour="instruments-list"]') && document.querySelector('[data-tour="instruments-list"]')!.contains(targetEl)
       if (isInstrumentsList && adjustedRect) {
-        const left = adjustedRect.left + (typeof window !== 'undefined' ? window.scrollX : 0) + adjustedRect.width + 12
-        const top = adjustedRect.top + (typeof window !== 'undefined' ? window.scrollY : 0)
+        const left = adjustedRect.left + adjustedRect.width + 12
+        const top = adjustedRect.top
         return { top, left, width: tooltipW }
       }
       const isPartsGrid = !!document.querySelector('[data-tour="parts-grid"]') && document.querySelector('[data-tour="parts-grid"]')!.contains(targetEl)
       if (isPartsGrid && adjustedRect) {
-        const left = adjustedRect.left + (typeof window !== 'undefined' ? window.scrollX : 0) - 12 - tooltipW
-        const top = adjustedRect.top + (typeof window !== 'undefined' ? window.scrollY : 0)
+        const left = adjustedRect.left - 12 - tooltipW
+        const top = adjustedRect.top
         return { top, left, width: tooltipW }
       }
     }
     const preferBelow = adjustedRect.top + adjustedRect.height + 12 + 80 < vpH // if there's room below for ~80px tooltip
-    const top = preferBelow ? adjustedRect.top + (typeof window !== 'undefined' ? window.scrollY : 0) + adjustedRect.height + 12 : adjustedRect.top + (typeof window !== 'undefined' ? window.scrollY : 0) - 12 - 80
-    const leftRaw = adjustedRect.left + (typeof window !== 'undefined' ? window.scrollX : 0) + 12
+    const top = preferBelow ? adjustedRect.top + adjustedRect.height + 12 : adjustedRect.top - 12 - 80
+    const leftRaw = adjustedRect.left + 12
     const left = Math.min(Math.max(margin, leftRaw), vpW - tooltipW - margin)
     return { top, left, width: tooltipW }
   })() : null
@@ -539,7 +575,7 @@ export default function OnboardingTour() {
               {step === 1 && awaitingDrop ? 'Now drop or tap to assign it to a part.' : (
                 step === 4 ? (
                   // Render Firebird in italics without using raw HTML
-                  <>This bar fills as your choices match Stravinsky's <em>Firebird</em> finale — see how close you can get!</>
+                  <>This bar fills as your choices match Stravinsky's <em>Firebird</em> finale — click to watch it performed, and see how close you can get!</>
                 ) : (
                   STEP_COPY[step as Step]
                 )
