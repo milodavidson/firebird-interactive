@@ -490,7 +490,7 @@ export default function OnboardingTour() {
         <Tooltip.Root>
           <Tooltip.Trigger asChild>
             <button
-                aria-label="Replay tips"
+                aria-label="Help"
                 onClick={() => {
                   // Open the modal so users can choose to start or skip the tour.
                   setModalVisible(true)
@@ -520,7 +520,7 @@ export default function OnboardingTour() {
             </button>
           </Tooltip.Trigger>
           <Tooltip.Content sideOffset={6} align="center" style={{ background: 'rgba(0,0,0,0.85)', color: '#fff', padding: '6px 8px', borderRadius: 6, fontSize: 12, zIndex: 80 }}>
-            Replay tips
+            Help
             <Tooltip.Arrow offset={6} style={{ fill: 'rgba(0,0,0,0.85)' }} />
           </Tooltip.Content>
         </Tooltip.Root>
