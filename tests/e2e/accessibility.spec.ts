@@ -43,4 +43,27 @@ test.describe('Accessibility', () => {
     if ((result as any).error === 'axe-unavailable') test.skip(true, 'axe-core unavailable; install axe-core to run accessibility tests locally')
     expect(result.violations, 'Axe violations in onboarding modal').toEqual([])
   })
+
+  test('keyboard toggles video playback in modal (announces state)', async ({ page }) => {
+    await page.goto('http://localhost:3000')
+    // open modal
+    await page.evaluate(() => { if ((window as any).__showOnboarding) (window as any).__showOnboarding() })
+    await page.waitForSelector('[role="dialog"][aria-labelledby="onboarding-title"]')
+    // This app exposes the video modal via some UI; for the test we'll open it if available
+    // Try calling any exposed helper to open the video modal, else skip
+    const hasVideoHelper = await page.evaluate(() => typeof (window as any).__openFirebirdVideo === 'function')
+    if (!hasVideoHelper) {
+      test.skip(true, 'no video modal helper exposed in this environment')
+      return
+    }
+    // open the video modal
+    await page.evaluate(() => { if ((window as any).__openFirebirdVideo) (window as any).__openFirebirdVideo() })
+    await page.waitForSelector('div[role="dialog"] iframe', { timeout: 5000 })
+    // Press Space to toggle playback
+    await page.keyboard.press(' ')
+    // Wait briefly for announcer element to appear and update
+    const live = await page.waitForSelector('#a11y-live-region', { timeout: 2000 })
+    const txt = await live.textContent()
+    expect(['Playing','Paused'].includes(txt?.trim() ?? '')).toBeTruthy()
+  })
 })

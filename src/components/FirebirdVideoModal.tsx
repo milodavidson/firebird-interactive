@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { X } from 'lucide-react'
 import { trapFocus } from '@/lib/a11y/focusTrap'
+import { announcePolite } from '@/lib/a11y/announce'
 
 type Props = {
   open: boolean
@@ -18,6 +19,8 @@ export default function FirebirdVideoModal({ open, onClose, triggerRef, videoEmb
   const [iframeSrc, setIframeSrc] = useState('')
   const dialogRef = useRef<HTMLDivElement | null>(null)
   const closeRef = useRef<HTMLButtonElement | null>(null)
+  const iframeRef = useRef<HTMLIFrameElement | null>(null)
+  const [isPlaying, setIsPlaying] = useState(false)
   const prevActive = useRef<Element | null>(null)
 
   // respect reduced motion preference
@@ -33,7 +36,16 @@ export default function FirebirdVideoModal({ open, onClose, triggerRef, videoEmb
   useEffect(() => {
     if (open) {
       // small timeout so animation can start before heavy load
-      const t = setTimeout(() => setIframeSrc(videoEmbedUrl), 80)
+      const t = setTimeout(() => {
+        try {
+          const origin = typeof window !== 'undefined' ? window.location.origin : ''
+          const separator = videoEmbedUrl.includes('?') ? '&' : '?'
+          const srcWithApi = `${videoEmbedUrl}${separator}enablejsapi=1&origin=${encodeURIComponent(origin)}`
+          setIframeSrc(srcWithApi)
+        } catch (e) {
+          setIframeSrc(videoEmbedUrl)
+        }
+      }, 80)
       return () => clearTimeout(t)
     }
     setIframeSrc('')
@@ -51,11 +63,45 @@ export default function FirebirdVideoModal({ open, onClose, triggerRef, videoEmb
       const dialog = dialogRef.current
       if (dialog) {
         const release = trapFocus(dialog)
-        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+
+        // handle keyboard toggles (Space / Enter / k) and Escape
+        const onKey = (e: KeyboardEvent) => {
+          // Don't handle when typing in form controls
+          const tgt = e.target as HTMLElement | null
+          const tag = (tgt?.tagName || '').toLowerCase()
+          if (tag === 'input' || tag === 'textarea' || tag === 'select' || tgt?.isContentEditable) return
+          if (e.key === 'Escape') { onClose(); return }
+          if (e.key === ' ' || e.key === 'Spacebar' || e.key === 'Enter' || e.key.toLowerCase() === 'k') {
+            e.preventDefault()
+            // Toggle play/pause via postMessage to YouTube iframe if present
+            const win = iframeRef.current?.contentWindow
+            if (win) {
+              const cmd = isPlaying ? 'pauseVideo' : 'playVideo'
+              try { win.postMessage(JSON.stringify({ event: 'command', func: cmd, args: [] }), '*') } catch (err) {}
+              // announce intent; actual player state update may come via postMessage from iframe
+              announcePolite(isPlaying ? 'Paused' : 'Playing')
+            }
+          }
+        }
+
+        // Listen for postMessage from iframe to update state when available
+        const onMessage = (ev: MessageEvent) => {
+          try {
+            const data = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data
+            if (data && data.event === 'onStateChange') {
+              // YouTube player state: 1 = playing, 2 = paused
+              const state = data.info
+              setIsPlaying(state === 1)
+            }
+          } catch (err) {}
+        }
+
         document.addEventListener('keydown', onKey)
+        window.addEventListener('message', onMessage)
         return () => {
           release()
           document.removeEventListener('keydown', onKey)
+          window.removeEventListener('message', onMessage)
         }
       }
     } else {
@@ -112,6 +158,7 @@ export default function FirebirdVideoModal({ open, onClose, triggerRef, videoEmb
               <div className="aspect-video w-full">
                 {iframeSrc ? (
                   <iframe
+                    ref={iframeRef}
                     width={560}
                     height={315}
                     src={iframeSrc}
