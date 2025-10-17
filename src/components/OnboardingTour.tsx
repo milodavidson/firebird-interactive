@@ -8,10 +8,10 @@ import { usePartsStore } from '@/hooks/usePartsStore'
 type Step = 1 | 2 | 3 | 4
 
 const STEP_COPY: Record<Step, string> = {
-  1: 'Welcome to the Orchestra Sandbox! Drag or tap an instrument to pick it up.',
+  1: 'Drag or tap an instrument to pick it up.',
   2: 'Start the music, change the tempo, or clear the grid.',
   3: 'Solo, mute, set dynamics, or remove instruments — new ones join on the next loop.',
-  4: 'This bar fills as your choices match Stravinsky\'s Firebird finale — see how close you can get!'
+  4: 'This bar fills as your choices match Stravinsky\'s actual Firebird finale — see how close you can get!'
 }
 
 // Persistent key for first-time-only behavior
@@ -50,20 +50,30 @@ export default function OnboardingTour() {
       setModalVisible(true)
     }
 
-    // Expose a console backdoor to re-run the tour for testing.
+    // Expose console backdoors for testing.
     const showOnboarding = () => {
-      localStorage.removeItem(STORAGE_KEY)
+      // Start the tooltip tour immediately (does not change seen flag)
+      setModalVisible(false)
       setVisible(true)
       setStep(1)
     }
 
-  ;(window as any).__showOnboarding = showOnboarding
+    const resetOnboarding = () => {
+      // Clear the seen flag and reopen the intro modal so the user can choose again
+      localStorage.removeItem(STORAGE_KEY)
+      setModalVisible(true)
+      setVisible(false)
+      setStep(null)
+    }
+
+    ;(window as any).__showOnboarding = showOnboarding
+    ;(window as any).__resetOnboarding = resetOnboarding
 
     // Keyboard backdoor: Ctrl+Shift+O (attached at mount and removed on unmount)
     const keyHandler = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.shiftKey && e.code === 'KeyO') {
         e.preventDefault()
-        showOnboarding()
+        resetOnboarding()
       }
     }
     window.addEventListener('keydown', keyHandler)
@@ -462,8 +472,8 @@ export default function OnboardingTour() {
           <div className="relative bg-white rounded-lg shadow-lg p-6 max-w-lg mx-4 z-[100001]">
             {/* While the modal is open, hide any existing tour overlays/tooltips to avoid visual artifacts */}
             <style>{`[data-tour-highlight],[data-tour-tooltip]{display:none !important}`}</style>
-            <h3 className="text-lg font-semibold mb-2">Welcome</h3>
-            <p className="text-sm text-gray-700 mb-4">Placeholder onboarding modal. Click Start to begin the interactive tour, or Skip to dismiss.</p>
+            <h3 className="text-lg font-semibold mb-2">Welcome to the Orchestra Sandbox!</h3>
+            <p className="text-sm text-gray-700 mb-4">Experiment with instruments, tempo, and dynamics to craft your own orchestral version of Stravinsky’s finale to <em>The Firebird</em> — or just see what sounds you can create.</p>
             <div className="flex justify-end gap-2">
               <button
                 className="btn btn-outline btn-sm"

@@ -121,7 +121,7 @@ export default function FirebirdVideoModal({ open, onClose, triggerRef, videoEmb
             style={{ zIndex: 60 }}
           >
             <div className="flex items-start justify-between gap-4">
-              <div id="firebird-video-title" className="font-semibold text-lg"><em>Firebird</em> clip</div>
+              <div id="firebird-video-title" className="font-semibold text-lg">Excerpt from <em>The Firebird</em></div>
               <button
                 ref={closeRef}
                 aria-label="Close video"
@@ -154,7 +154,7 @@ export default function FirebirdVideoModal({ open, onClose, triggerRef, videoEmb
               </div>
             </div>
 
-            <div className="mt-4 text-sm text-gray-600">Click outside, press Esc, or press Close to dismiss.</div>
+            {/* helper text removed per design */}
           </motion.div>
         </motion.div>
       )}
