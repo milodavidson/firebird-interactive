@@ -15,6 +15,13 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
   if (!part) return null
   const atCapacity = part.assignedInstruments.length >= 4
   const isEmpty = part.assignedInstruments.length === 0
+  const placeholderTexts: Record<'melody' | 'harmony' | 'rhythm' | 'texture', string> = {
+    melody: "The main tune of the music—the part you'd hum.",
+    harmony: 'Notes that move with the melody to make it sound rich and powerful.',
+    rhythm: 'The steady beats that give music its drive and strength.',
+    texture: 'The sparkle and shimmer that make music feel alive.',
+  }
+  const placeholderText = placeholderTexts[partId]
   const dragDepthRef = useRef(0)
   return (
     <motion.div
@@ -108,7 +115,7 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
           style={{ overflow: 'hidden' }}
           className={`text-sm text-gray-600 ${isEmpty ? '' : 'pointer-events-none'}`}
         >
-          Assign up to 4 instruments here.
+          {placeholderText}
         </motion.li>
         {/* Items animate independently; only removed item exits */}
         <AnimatePresence initial={false} mode="sync">
