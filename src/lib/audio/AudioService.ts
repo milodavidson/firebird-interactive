@@ -8,6 +8,7 @@ export class AudioService {
   private bufferCache: BufferByUrl = new Map()
   private baseGains: Map<string, GainPair> = new Map()
   private limiter: DynamicsCompressorNode | null = null
+  private masterGain: GainNode | null = null
   private destination: AudioNode | null = null
 
   // active nodes per instance and type
@@ -22,16 +23,40 @@ export class AudioService {
   this.audioCtx = new AC()
   const ctx = this.audioCtx!
   const limiter = ctx.createDynamicsCompressor()
-      limiter.threshold.value = -10
+      limiter.threshold.value = -20
       limiter.knee.value = 20
       limiter.ratio.value = 12
       limiter.attack.value = 0.003
       limiter.release.value = 0.25
       this.limiter = limiter
-      this.destination = limiter
-  limiter.connect(ctx.destination)
+      // Create a master gain after the limiter so the app can adjust overall
+      // output level relative to other sources (e.g., embedded video).
+      const master = ctx.createGain()
+  // Default master gain set to approx -12 dB (raise ~3 dB)
+  // linear gain = 10^(dB/20) => 10^(-12/20) ≈ 0.251188
+  master.gain.value = 0.251188
+      this.masterGain = master
+      this.destination = master
+  limiter.connect(master)
+  master.connect(ctx.destination)
     }
   }
+
+  /**
+   * Set the overall master gain (0.0 - 1.0). Initializes audio if needed.
+   */
+  setMasterGain(value: number) {
+    this.initIfNeeded()
+    if (!this.masterGain) return
+    const v = Math.max(0, Math.min(1, value))
+    this.masterGain.gain.value = v
+  }
+
+  /** Get current master gain value (0.0 - 1.0) */
+  getMasterGain(): number {
+    return this.masterGain?.gain.value ?? 1
+  }
+
 
   async loadAudioBuffer(url: string): Promise<AudioBuffer> {
     this.initIfNeeded()
@@ -55,8 +80,12 @@ export class AudioService {
     const loud = this.audioCtx.createGain()
     soft.gain.value = 1
     loud.gain.value = 0
-    soft.connect(this.destination)
-    loud.connect(this.destination)
+  // Connect per-instrument gains into the pre-master chain.
+  // Prefer connecting into the limiter so audio flows: instrument -> limiter -> masterGain
+  const outNode = this.limiter ?? this.destination
+  if (!outNode) throw new Error('Audio destination not ready')
+  soft.connect(outNode)
+  loud.connect(outNode)
     const pair = { soft, loud }
     this.baseGains.set(instId, pair)
     return pair
