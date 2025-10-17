@@ -15,6 +15,7 @@ html, body, #__next {
 body {
   background-color: #ffffff;
   color: #0a0a0a;
+  margin: 0;
 }
 
 /* Mobile scroll smoothing: reduce jitter/bounce when overscrolling at page edges */
