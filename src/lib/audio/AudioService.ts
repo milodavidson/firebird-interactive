@@ -23,7 +23,7 @@ export class AudioService {
   this.audioCtx = new AC()
   const ctx = this.audioCtx!
   const limiter = ctx.createDynamicsCompressor()
-      limiter.threshold.value = -20
+      limiter.threshold.value = -10
       limiter.knee.value = 20
       limiter.ratio.value = 12
       limiter.attack.value = 0.003
