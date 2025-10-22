@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { usePartsStore } from '@/hooks/usePartsStore'
+import { Feather, Megaphone, PartyPopper, Shuffle } from 'lucide-react'
 
 type QuickMixKey = 'soft' | 'bold' | 'silly' | 'random'
 
@@ -46,7 +47,10 @@ export default function QuickMixes({ apply }: { apply: (key: QuickMixKey) => voi
             className="pressable w-full rounded-lg border px-4 py-3 text-left text-sm md:text-base hover:-translate-y-[1px] hover:bg-gray-50 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-brand-navy)] border-gray-300"
             aria-label="Apply Soft quick mix"
           >
-            <span className="font-medium">Soft</span>
+            <span className="flex items-center gap-2">
+              <Feather size={24} strokeWidth={1} aria-hidden="true" className="flex-shrink-0 text-[var(--color-brand-navy)]" />
+              <span className="font-medium">Soft</span>
+            </span>
           </button>
 
           <button
@@ -55,7 +59,10 @@ export default function QuickMixes({ apply }: { apply: (key: QuickMixKey) => voi
             className="pressable w-full rounded-lg border px-4 py-3 text-left text-sm md:text-base hover:-translate-y-[1px] hover:bg-gray-50 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-brand-navy)] border-gray-300"
             aria-label="Apply Bold quick mix"
           >
-            <span className="font-medium">Bold</span>
+            <span className="flex items-center gap-2">
+              <Megaphone size={24} strokeWidth={1} aria-hidden="true" className="flex-shrink-0 text-[var(--color-brand-navy)]" />
+              <span className="font-medium">Bold</span>
+            </span>
           </button>
 
           <button
@@ -64,7 +71,10 @@ export default function QuickMixes({ apply }: { apply: (key: QuickMixKey) => voi
             className="pressable w-full rounded-lg border px-4 py-3 text-left text-sm md:text-base hover:-translate-y-[1px] hover:bg-gray-50 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-brand-navy)] border-gray-300"
             aria-label="Apply Silly quick mix"
           >
-            <span className="font-medium">Silly</span>
+            <span className="flex items-center gap-2">
+              <PartyPopper size={24} strokeWidth={1} aria-hidden="true" className="flex-shrink-0 text-[var(--color-brand-navy)]" />
+              <span className="font-medium">Silly</span>
+            </span>
           </button>
 
           <button
@@ -73,7 +83,10 @@ export default function QuickMixes({ apply }: { apply: (key: QuickMixKey) => voi
             className="pressable w-full rounded-lg border px-4 py-3 text-left text-sm md:text-base hover:-translate-y-[1px] hover:bg-gray-50 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-brand-navy)] border-gray-300"
             aria-label="Apply Random quick mix"
           >
-            <span className="font-medium">Random</span>
+            <span className="flex items-center gap-2">
+              <Shuffle size={24} strokeWidth={1} aria-hidden="true" className="flex-shrink-0 text-[var(--color-brand-navy)]" />
+              <span className="font-medium">Random</span>
+            </span>
           </button>
         </div>
       </div>
