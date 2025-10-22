@@ -97,7 +97,7 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
           el.click()
         }
       }}
-  className={`rounded-lg border p-4 md:p-5 transition h-auto lg:h-full flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-navy)] focus-visible:ring-offset-2`}
+  className={`rounded-lg border p-4 md:p-5 transition h-full flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-navy)] focus-visible:ring-offset-2`}
     >
       <div className="mb-2 text-base md:text-lg font-semibold" data-testid={`part-${part.id}`}>
         <span className="inline-flex items-center gap-2">
@@ -105,7 +105,7 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
           <span>{part.name}</span>
         </span>
       </div>
-  <ul className="list-none pl-0 space-y-2 md:space-y-2.5 flex-1 xl:overflow-auto min-h-0">
+  <ul className="list-none pl-0 flex flex-col flex-1 min-h-0 gap-y-1">
         {/* Always mounted placeholder that fades/collapses when not empty */}
         <motion.li
           key="empty"
@@ -127,6 +127,7 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ type: 'spring', stiffness: 400, damping: 28, mass: 0.6 }}
+              className="flex-1 overflow-visible"
             >
               <AssignedInstrument inst={inst} />
             </motion.li>

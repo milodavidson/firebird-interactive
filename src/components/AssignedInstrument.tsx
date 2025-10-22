@@ -34,7 +34,7 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
   }, [inst.isLoading, inst.name, play])
 
   return (
-  <div data-inst-id={inst.id} data-queued={!!inst.isLoading} className="relative flex flex-wrap xl:flex-nowrap items-center gap-x-1.5 lg:gap-x-1.5 gap-y-1 pt-1.5 pb-0.5">
+  <div data-inst-id={inst.id} data-queued={!!inst.isLoading} className="relative flex flex-wrap xl:flex-nowrap items-center gap-x-1.5 lg:gap-x-1.5 gap-y-0.5 pt-1 pb-1 overflow-visible min-h-[clamp(48px,6vh,140px)]">
       {/* Screen reader only live region to announce when a queued instrument starts */}
       <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">{liveMsg}</div>
       <AnimatePresence initial={false}>
