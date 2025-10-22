@@ -622,7 +622,7 @@ export default function OnboardingTour() {
               {step === 1 && awaitingDrop ? 'Drop or tap to assign it to a part.' : (
                 step === 4 ? (
                   // Render Firebird in italics without using raw HTML
-                  <>This bar fills as your choices match Stravinsky's <em>Firebird</em> finale — click to watch it performed, and see how close you can get!</>
+                  <>This bar fills as your choices match Stravinsky's actual <em>Firebird</em> finale. Click to watch it performed, and see how close you can get!</>
                 ) : (
                   STEP_COPY[step as Step]
                 )
