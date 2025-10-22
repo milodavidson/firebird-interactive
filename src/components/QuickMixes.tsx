@@ -11,7 +11,7 @@ export default function QuickMixes({ apply }: { apply: (key: QuickMixKey) => voi
 
   return (
     <div className={`mt-3 ${play ? 'opacity-50 pointer-events-none' : 'opacity-100'}`} aria-disabled={play}>
-      <div className="border-t border-gray-200 pt-2">
+  <div data-tour="instruments-divider" className="border-t border-gray-200 pt-2">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-medium">Quick Mixes</h3>
           <button

@@ -465,6 +465,22 @@ export default function OnboardingTour() {
         const extra = 4
         return new DOMRect(rect.left - extra, rect.top, rect.width + extra * 2, rect.height)
       }
+      // For step 1, clamp the bottom edge to the divider between instruments list and QuickMixes
+      if (step === 1) {
+        try {
+          const divider = document.querySelector('[data-tour="instruments-divider"]') as HTMLElement | null
+          const list = document.querySelector('[data-tour="instruments-list"]') as HTMLElement | null
+          if (divider && list && list.contains(targetEl)) {
+            const divRect = divider.getBoundingClientRect()
+            // If divider is below the instruments rect, reduce height to stop at divider
+            if (divRect.top > rect.top && divRect.top < rect.bottom) {
+              return new DOMRect(rect.left, rect.top, rect.width, Math.max(0, divRect.top - rect.top))
+            }
+          }
+        } catch (e) {
+          // ignore DOM errors
+        }
+      }
     }
     return rect
   })() : null
