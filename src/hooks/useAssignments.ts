@@ -9,7 +9,7 @@ import { computeNextLoopScheduleTime } from '@/lib/audio/audioUtils'
 export function useAssignments() {
   const store = usePartsStore()
   const addInstrument = useCallback(
-    async (partId: PartId, instrumentId: string, name: string) => {
+    async (partId: PartId, instrumentId: string, name: string): Promise<string | void> => {
       const instId = `${partId}-${instrumentId}-${Date.now()}`
       const tempo = store.currentTempoRef.current
       const softFile = `/audio/${partId}/${instrumentId}-p-${tempo}.mp3`
@@ -28,7 +28,7 @@ export function useAssignments() {
       const part = store.partsRef.current.find(p => p.id === partId)!
       if (part.assignedInstruments.some(ai => ai.instrumentId === instrumentId)) return
 
-      if (!store.playStateRef.current) {
+  if (!store.playStateRef.current) {
         // idle: preload both tempos and add directly
         await Promise.all([
           audioService.preloadTempoForInstance(instId, partId, instrumentId, 'fast'),
@@ -40,6 +40,7 @@ export function useAssignments() {
         store.setParts(prev =>
           prev.map(p => (p.id === partId ? { ...p, assignedInstruments: [...p.assignedInstruments, { ...assigned, hasError }] } : p))
         )
+        return instId
       } else {
         // playing: mark queued and push to deferredQueueRef
         audioService.initIfNeeded()
@@ -48,12 +49,13 @@ export function useAssignments() {
     const { scheduleTime } = computeNextLoopScheduleTime(ctx.currentTime, transport, store.currentTempoRef.current)
     const remaining = Math.max(0, scheduleTime - ctx.currentTime)
     const queued = { ...assigned, isLoading: true, queueStartTime: ctx.currentTime, queueTimeRemaining: remaining, queueScheduleTime: scheduleTime }
-        store.setParts(prev => prev.map(p => (p.id === partId ? { ...p, assignedInstruments: [...p.assignedInstruments, queued] } : p)))
+  store.setParts(prev => prev.map(p => (p.id === partId ? { ...p, assignedInstruments: [...p.assignedInstruments, queued] } : p)))
         store.deferredQueueRef.current = [...store.deferredQueueRef.current, queued]
         // preload current tempo first
         await audioService.preloadTempoForInstance(instId, partId, instrumentId, store.currentTempoRef.current)
         // preload other tempo in background
         audioService.preloadTempoForInstance(instId, partId, instrumentId, store.currentTempoRef.current === 'fast' ? 'slow' : 'fast')
+        return instId
       }
     },
     [store]

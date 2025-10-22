@@ -6,6 +6,22 @@
   --color-brand-red: #e22237;
   --color-brand-pink: #ffc2d1;
   --color-brand-navy: #132067;
+  /* Quick Mixes accents: use brand colors (navy / red) */
+  --qm-soft-border: rgba(19,32,103,0.08); /* subtle navy */
+  --qm-soft-bg: #ffffff;
+  --qm-soft-text: var(--color-brand-navy);
+
+  --qm-bold-border: rgba(226,34,55,0.12); /* subtle red */
+  --qm-bold-bg: #ffffff;
+  --qm-bold-text: var(--color-brand-red);
+
+  --qm-silly-border: rgba(19,32,103,0.08);
+  --qm-silly-bg: #ffffff;
+  --qm-silly-text: var(--color-brand-navy);
+
+  --qm-random-border: rgba(226,34,55,0.12);
+  --qm-random-bg: #ffffff;
+  --qm-random-text: var(--color-brand-red);
 }
 
 html, body, #__next {
