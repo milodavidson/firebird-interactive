@@ -74,6 +74,39 @@ html, body {
   .shimmer:before { animation: none !important; }
 }
 
+/* Taller screens: conservative expansion so rows grow a bit and controls feel larger
+   (avoid huge min-heights which create large whitespace between rows). */
+@media (min-height: 900px) {
+  .src-assigned-instrument-expand {
+    /* Conservative min and max so rows feel fuller but never force the parent card to grow
+       Min is slightly larger than default; max prevents oversized rows that cause scrolling */
+    min-height: 64px !important;
+    max-height: 120px !important;
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+  /* Larger family icon */
+  .src-assigned-instrument-expand img {
+    height: 28px !important;
+  }
+  /* Make range controls slightly taller and the thumb easier to hit */
+  .src-assigned-instrument-expand input[type="range"] {
+    height: 10px !important;
+  }
+  .src-assigned-instrument-expand input[type="range"]::-webkit-slider-thumb {
+    width: 18px !important;
+    height: 18px !important;
+    margin-top: -7px !important;
+  }
+  /* Slightly larger control buttons */
+  .src-assigned-instrument-expand .btn {
+    padding-top: 0.45rem !important;
+    padding-bottom: 0.45rem !important;
+    padding-left: 0.6rem !important;
+    padding-right: 0.6rem !important;
+  }
+}
+
 /* Simple confetti container hook (can be enhanced later) */
 .confetti-wrap::before, .confetti-wrap::after {
   content: '';

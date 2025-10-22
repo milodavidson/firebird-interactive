@@ -127,7 +127,7 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ type: 'spring', stiffness: 400, damping: 28, mass: 0.6 }}
-              className="flex-1 overflow-visible"
+              className="flex-none overflow-visible"
             >
               <AssignedInstrument inst={inst} />
             </motion.li>

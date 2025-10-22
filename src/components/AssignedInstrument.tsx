@@ -34,7 +34,7 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
   }, [inst.isLoading, inst.name, play])
 
   return (
-  <div data-inst-id={inst.id} data-queued={!!inst.isLoading} className="relative flex flex-wrap xl:flex-nowrap items-center gap-x-1.5 lg:gap-x-1.5 gap-y-0.5 pt-1 pb-1 overflow-visible min-h-[clamp(48px,6vh,140px)]">
+  <div data-inst-id={inst.id} data-queued={!!inst.isLoading} className="relative flex flex-wrap xl:flex-nowrap items-center gap-x-1.5 lg:gap-x-1.5 gap-y-0.5 pt-1 pb-1 overflow-visible min-h-[clamp(48px,6vh,140px)] max-h-[120px] src-assigned-instrument-expand">
       {/* Screen reader only live region to announce when a queued instrument starts */}
       <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">{liveMsg}</div>
       <AnimatePresence initial={false}>
@@ -43,7 +43,7 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
         )}
       </AnimatePresence>
       {/* Icon/name block */}
-  <div className="flex min-w-0 items-center gap-2 order-1 xl:w-[48px] xl:flex-none xl:shrink-0">
+  <div className="flex min-w-0 items-center gap-2 order-1 xl:w-[64px] xl:flex-none xl:shrink-0">
         <InstrumentFamilyIcon instrumentId={inst.instrumentId} />
         <span className="sr-only" data-testid="inst-name">{inst.name}{inst.hasError ? ' (File missing)' : ''}</span>
       </div>
