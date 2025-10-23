@@ -1,16 +1,19 @@
 import type { Tempo } from '@/lib/types'
+import { musicConfig } from './musicConfig'
 
 export function secondsPerBeat(tempo: Tempo): number {
-  return tempo === 'fast' ? 60 / 160 : 60 / 80
+  const bpm = tempo === 'fast' ? musicConfig.bpms.fast : musicConfig.bpms.slow
+  return 60 / bpm
 }
 
 export function loopDuration(tempo: Tempo): number {
-  return tempo === 'fast' ? 10.5 : 21
+  // Compute duration from explicit beatsPerLoop to avoid rounding drift.
+  return musicConfig.beatsPerLoop * secondsPerBeat(tempo)
 }
 
-export function beatsPerLoop(tempo: Tempo): number {
-  const spb = secondsPerBeat(tempo)
-  return Math.round(loopDuration(tempo) / spb)
+export function beatsPerLoop(_tempo: Tempo): number {
+  // The design uses the same number of beats per loop for both tempos.
+  return musicConfig.beatsPerLoop
 }
 
 export function computeCurrentBeatIndex(audioNow: number, transportStart: number, tempo: Tempo): number {

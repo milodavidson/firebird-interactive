@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { computeCurrentBeatIndex } from '@/lib/audio/audioUtils'
-import { computeWithinLoopBeat, computeWithinLoopBeatAtTime } from '@/lib/audio/audioUtils'
+import { computeWithinLoopBeat, computeWithinLoopBeatAtTime, secondsPerBeat, loopDuration, beatsPerLoop } from '@/lib/audio/audioUtils'
 import { usePartsStore } from './usePartsStore'
 import { audioService } from '@/lib/audio/AudioService'
 import type { AudioInspectorSnapshot } from '@/lib/types'
@@ -65,6 +65,16 @@ export function useAudioInspector(scheduler?: AudioScheduler) {
         const start = store.transportStartRef.current
         if (start == null) return null
         return computeWithinLoopBeatAtTime(t, start, tempo)
+      },
+      // Expose useful audio math helpers so tests can derive timing from runtime config
+      getSecondsPerBeatForTempo: (tempo: 'fast' | 'slow') => {
+        return secondsPerBeat(tempo)
+      },
+      getLoopDurationForTempo: (tempo: 'fast' | 'slow') => {
+        return loopDuration(tempo)
+      },
+      getBeatsPerLoop: () => {
+        return beatsPerLoop('fast')
       },
       getLastTempoSwitchExecution: () => (scheduler ? scheduler.getLastTempoSwitchExecution() : null)
     }

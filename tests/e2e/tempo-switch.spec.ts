@@ -58,10 +58,10 @@ test.describe('tempo switch', () => {
       const insp: any = (window as any).__audioInspector
       const sw = insp.getLastTempoSwitchExecution()
       if (!sw) return false
-      // compute boundary based on withinBeatUsed at execution
+      // compute boundary based on withinBeatUsed at execution using runtime helpers
       const tempo = insp.getTempo()
-      const spb = tempo === 'fast' ? 60/160 : 60/80
-      const bpl = Math.round((tempo === 'fast' ? 10.5 : 21) / spb)
+      const spb = insp.getSecondsPerBeatForTempo(tempo)
+      const bpl = insp.getBeatsPerLoop()
       const remainingBeats = bpl - (sw.withinBeatUsed - 1)
       const boundary = sw.scheduleTime + remainingBeats * spb
       // sample slightly after boundary
