@@ -6,6 +6,7 @@ import { announcePolite } from '@/lib/a11y/announce'
 import { usePartsStore } from '@/hooks/usePartsStore'
 import { useAssignments } from '@/hooks/useAssignments'
 import QuickMixes from './QuickMixes'
+import * as styles from './InstrumentList.css'
 
 export default function InstrumentList() {
   const { selectedInstrument, setSelectedInstrument } = usePartsStore()
@@ -96,12 +97,12 @@ export default function InstrumentList() {
   }, [setSelectedInstrument])
 
   return (
-    <div className="flex flex-col">
-      <p className="text-xs text-gray-600">Drag or tap to select, then tap a part.</p>
-      <p className="sr-only">Keyboard: press Enter to select an instrument, then move to a part and press Enter to assign. Press Escape to cancel selection.</p>
-      <ul className="mt-3 grid grid-cols-2 gap-3 md:block md:space-y-3 overflow-visible pt-1">
+    <div className={styles.container}>
+      <p className={styles.helpText}>Drag or tap to select, then tap a part.</p>
+      <p className={styles.srOnly}>Keyboard: press Enter to select an instrument, then move to a part and press Enter to assign. Press Escape to cancel selection.</p>
+      <ul className={styles.list}>
         {INSTRUMENTS.map(inst => (
-          <li key={inst.id}>
+          <li key={inst.id} className={styles.listItem}>
             <button
               draggable
               data-instrument-id={inst.id}
@@ -119,9 +120,9 @@ export default function InstrumentList() {
                 }
               }}
               aria-pressed={selectedInstrument?.id === inst.id}
-              className={`pressable w-full rounded-lg border px-4 py-3 text-left text-sm md:text-base transition hover:-translate-y-[1px] hover:bg-gray-50 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-brand-navy)] ${selectedInstrument?.id === inst.id ? 'border-[var(--color-brand-navy)] ring-1 ring-[var(--color-brand-navy)]' : 'border-gray-300'}`}
+              className={styles.instrumentButton({ selected: selectedInstrument?.id === inst.id })}
             >
-              <span className="flex items-center gap-2">
+              <span className={styles.buttonContent}>
                 <InstrumentFamilyIconInline id={inst.id} name={inst.name} />
                 <span>{inst.name}</span>
               </span>
@@ -144,6 +145,6 @@ function InstrumentFamilyIconInline({ id, name }: { id: string; name: string }) 
     case 'strings': src = '/icons/strings.png'; break
     default: return null
   }
-  return <img src={src} alt={`${name} icon`} className="h-5 w-auto md:h-6 select-none shrink-0" draggable={false} />
+  return <img src={src} alt={`${name} icon`} className={styles.icon} draggable={false} />
 }
 

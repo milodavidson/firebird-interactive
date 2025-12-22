@@ -7,6 +7,7 @@ import * as Tooltip from '@radix-ui/react-tooltip'
 import { Check, X, Minus } from 'lucide-react'
 import { usePartsStore } from '@/hooks/usePartsStore'
 import { INSTRUMENTS } from '@/lib/instruments'
+import * as styles from './FirebirdProgressChip.css'
 
 type PartId = 'melody' | 'harmony' | 'rhythm' | 'texture'
 
@@ -161,7 +162,7 @@ export default function FirebirdProgressChip() {
   }, [])
 
   return (
-  <div ref={containerRef} className="relative inline-flex items-center w-full">
+  <div ref={containerRef} className={styles.container}>
       <Tooltip.Provider>
   <Tooltip.Root delayDuration={0}>
           <Tooltip.Trigger asChild>
@@ -171,22 +172,19 @@ export default function FirebirdProgressChip() {
               aria-expanded={showChecklist}
               aria-controls="firebird-checklist"
               ref={triggerRef}
-              className={`inline-flex items-center gap-2 rounded-full border border-gray-300 bg-white px-2 sm:px-3 h-8 sm:h-9 md:h-9 xl:h-9 shrink-0 pressable w-full transition-transform duration-150 ease-out hover:scale-[1.02] hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-brand-navy)]`}
+              className={styles.button}
               onClick={() => setShowChecklist(v => !v)}
               onFocus={() => { /* intentionally do nothing on focus */ }}
-              style={computedMaxWidth ? { maxWidth: `${computedMaxWidth}px`, transition: 'max-width 220ms ease' } : undefined}
+              style={computedMaxWidth ? { maxWidth: `${computedMaxWidth}px` } : undefined}
             >
-              <img src="/icons/Firebird.png" alt="Firebird icon" className="h-4 w-auto md:h-5 xl:h-5" />
-              <span ref={barRef} className="relative inline-flex items-center flex-1 min-w-0 md:min-w-[160px] h-1.5 md:h-2 xl:h-2 rounded-full bg-gray-200 overflow-hidden">
+              <img src="/icons/Firebird.png" alt="Firebird icon" className={styles.icon} />
+              <span ref={barRef} className={styles.progressBar}>
                 {/* Fill + one-time shimmer on completion */}
-                <span className={`relative overflow-hidden h-full ${color}`} style={{ width: `${data.percent}%`, transition: 'width 200ms linear' }}>
+                <span className={styles.progressFill({ complete: data.percent >= 100 })} style={{ width: `${data.percent}%` }}>
                   {showShimmer && data.percent === 100 && (
                     <motion.span
                       aria-hidden
-                      className="absolute inset-0"
-                      style={{
-                        background: 'linear-gradient(90deg, transparent 0%, #FFFFFF80 50%, transparent 100%)'
-                      }}
+                      className={styles.shimmerOverlay}
                       initial={{ x: '-100%' }}
                       animate={{ x: '200%' }}
                       transition={{ duration: 0.8, ease: 'easeInOut' }}
@@ -198,9 +196,9 @@ export default function FirebirdProgressChip() {
           </Tooltip.Trigger>
           {data.percent !== 100 && (
             <Tooltip.Portal>
-              <Tooltip.Content side="bottom" sideOffset={6} className="z-50 rounded bg-black/90 px-2 py-1 text-xs text-white shadow">
+              <Tooltip.Content side="bottom" sideOffset={6} className={styles.tooltip}>
                 <>Try recreating Stravinsky&apos;s epic finale from <em>The Firebird</em>! Click to see the piece performed.</>
-                <Tooltip.Arrow className="fill-black/90" />
+                <Tooltip.Arrow className={styles.tooltipArrow} />
               </Tooltip.Content>
             </Tooltip.Portal>
           )}
@@ -213,7 +211,7 @@ export default function FirebirdProgressChip() {
           role="status"
           aria-live="polite"
           aria-atomic="true"
-          className={`absolute left-1/2 -translate-x-1/2 top-full mt-1 text-xs md:text-sm whitespace-nowrap font-semibold text-[var(--color-brand-navy)]`}
+          className={styles.congratsMessage}
         >
           <>Congratulations, Maestro! You did it!</>
         </div>

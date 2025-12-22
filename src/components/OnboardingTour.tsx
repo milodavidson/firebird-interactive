@@ -5,6 +5,7 @@ import { trapFocus } from '@/lib/a11y/focusTrap'
 import * as Tooltip from '@radix-ui/react-tooltip'
 import { HelpCircle } from 'lucide-react'
 import { usePartsStore } from '@/hooks/usePartsStore'
+import * as styles from './OnboardingTour.css'
 
 type Step = 1 | 2 | 3 | 4
 
@@ -575,21 +576,21 @@ export default function OnboardingTour() {
 
       {/* Overlay highlight: only show when the tooltip-based tour is visible */}
       {visible && !modalVisible && adjustedRect && (
-        <div style={style} data-tour-highlight className="z-50" />
+        <div style={style} data-tour-highlight className={styles.highlight} />
       )}
       {/* First-open modal (placeholder copy). Only shown when modalVisible is true. */}
       {modalVisible && (
         // Use a very high z-index to ensure the modal covers any tour highlights.
-        <div className="fixed inset-0 z-[100000] flex items-center justify-center" aria-hidden={modalVisible ? 'false' : 'true'}>
-          <div className="absolute inset-0 bg-black/70" onClick={() => setModalVisible(false)} />
-          <div role="dialog" aria-modal="true" aria-labelledby="onboarding-title" className="relative bg-white rounded-lg shadow-lg p-6 max-w-lg mx-4 z-[100001]">
+        <div className={styles.modalOverlay} aria-hidden={modalVisible ? 'false' : 'true'}>
+          <div className={styles.modalBackdrop} onClick={() => setModalVisible(false)} />
+          <div role="dialog" aria-modal="true" aria-labelledby="onboarding-title" className={styles.modalDialog}>
             {/* While the modal is open, hide any existing tour overlays/tooltips to avoid visual artifacts */}
             <style>{`[data-tour-highlight],[data-tour-tooltip]{display:none !important}`}</style>
-            <h3 id="onboarding-title" className="text-lg font-semibold mb-2">Welcome to the Orchestra Sandbox!</h3>
-            <p className="text-sm text-gray-700 mb-4">Experiment with instruments, tempo, and dynamics to craft your own orchestral version of Stravinsky’s finale to <em>The Firebird</em> — or just see what sounds you can create.</p>
-            <div className="flex justify-end gap-2">
+            <h3 id="onboarding-title" className={styles.modalTitle}>Welcome to the Orchestra Sandbox!</h3>
+            <p className={styles.modalText}>Experiment with instruments, tempo, and dynamics to craft your own orchestral version of Stravinsky's finale to <em>The Firebird</em> — or just see what sounds you can create.</p>
+            <div className={styles.modalActions}>
               <button
-                className="btn btn-outline btn-sm"
+                className={styles.button({ variant: 'outline' })}
                 onClick={() => {
                   // Persist skip so modal/tour won't show again
                   if (typeof window !== 'undefined') safeSetItem(STORAGE_KEY, '1')
@@ -601,7 +602,7 @@ export default function OnboardingTour() {
                 Skip
               </button>
               <button
-                className="btn btn-primary btn-sm"
+                className={styles.button({ variant: 'primary' })}
                 onClick={() => {
                   setModalVisible(false)
                   setVisible(true)
@@ -616,9 +617,9 @@ export default function OnboardingTour() {
       )}
       {/* Floating tooltip */}
       {visible && !modalVisible && adjustedRect && tooltipEl && (
-        <div data-tour-tooltip ref={tooltipRef} style={{ position: 'fixed', left: tooltipEl.left, top: tooltipEl.top, zIndex: 60, width: tooltipEl.width }}>
-          <div className="max-w-full p-3 bg-white rounded shadow-lg text-sm">
-            <div className="font-semibold mb-1">
+        <div data-tour-tooltip ref={tooltipRef} className={styles.tooltipContainer} style={{ left: tooltipEl.left, top: tooltipEl.top, width: tooltipEl.width }}>
+          <div className={styles.tooltipContent}>
+            <div className={styles.tooltipText}>
               {step === 1 && awaitingDrop ? 'Drop or tap to assign it to a part.' : (
                 step === 4 ? (
                   // Render Firebird in italics without using raw HTML
@@ -628,9 +629,9 @@ export default function OnboardingTour() {
                 )
               )}
             </div>
-            <div className="flex items-center gap-2 justify-end">
+            <div className={styles.tooltipActions}>
               <button
-                className={isolatedStep3Mode ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm'}
+                className={styles.button({ variant: isolatedStep3Mode ? 'primary' : 'outline' })}
                 onClick={() => {
                   // Persist seen flag and Close behavior differs if this is isolated mode
                   if (typeof window !== 'undefined') safeSetItem(STORAGE_KEY, '1')
@@ -645,7 +646,7 @@ export default function OnboardingTour() {
                 }}
               >{isolatedStep3Mode ? 'Done' : 'Close'}</button>
               {!isolatedStep3Mode && (
-                <button className="btn btn-primary btn-sm" onClick={() => {
+                <button className={styles.button({ variant: 'primary' })} onClick={() => {
                   // On Finish persist the seen flag
                   if (step === 4 && typeof window !== 'undefined') safeSetItem(STORAGE_KEY, '1')
                   handleNext()

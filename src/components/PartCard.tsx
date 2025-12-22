@@ -6,6 +6,7 @@ import AssignedInstrument from '@/components/AssignedInstrument'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Music, Drum, Waves, Piano } from 'lucide-react'
 import { useRef } from 'react'
+import * as styles from './PartCard.css'
 
 export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'rhythm' | 'texture' }) {
   const { parts } = usePartsStore()
@@ -33,25 +34,25 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
       onDragOverCapture={e => {
         // Capture-phase fallback so fast drags still show feedback
         const el = e.currentTarget as HTMLDivElement
-        el.classList.add('ring-2','ring-[var(--color-brand-navy)]','shadow-md','scale-[1.01]')
+        el.classList.add(styles.cardDragOver)
       }}
       onDragOver={e => {
         e.preventDefault()
         try { e.dataTransfer.dropEffect = 'move' } catch {}
         const el = e.currentTarget as HTMLDivElement
-        el.classList.add('ring-2','ring-[var(--color-brand-navy)]','shadow-md','scale-[1.01]')
+        el.classList.add(styles.cardDragOver)
       }}
       onDragEnter={e => {
         const el = e.currentTarget as HTMLDivElement
         try { e.dataTransfer.dropEffect = 'move' } catch {}
         dragDepthRef.current += 1
-        el.classList.add('ring-2','ring-[var(--color-brand-navy)]','shadow-md','scale-[1.01]')
+        el.classList.add(styles.cardDragOver)
       }}
       onDragLeave={e => {
         const el = e.currentTarget as HTMLDivElement
         dragDepthRef.current = Math.max(0, dragDepthRef.current - 1)
         if (dragDepthRef.current === 0) {
-          el.classList.remove('ring-2','ring-[var(--color-brand-navy)]','shadow-md','scale-[1.01]')
+          el.classList.remove(styles.cardDragOver)
         }
       }}
       onDrop={e => {
@@ -59,13 +60,13 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
         const instrumentId = e.dataTransfer.getData('text/instrumentId')
         const instrumentName = e.dataTransfer.getData('text/instrumentName')
         dragDepthRef.current = 0
-        el.classList.remove('ring-2','ring-[var(--color-brand-navy)]','shadow-md','scale-[1.01]')
+        el.classList.remove(styles.cardDragOver)
         if (instrumentId) {
           // prevent duplicates and capacity
           if (part.assignedInstruments.some(ai => ai.instrumentId === instrumentId) || atCapacity) {
             // denial shake
-            el.classList.add('animate-shake-x')
-            setTimeout(() => { if (el && el.isConnected) el.classList.remove('animate-shake-x') }, 220)
+            el.classList.add(styles.shake)
+            setTimeout(() => { if (el && el.isConnected) el.classList.remove(styles.shake) }, 220)
             return
           }
           addInstrument(partId, instrumentId, instrumentName)
@@ -77,8 +78,8 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
           if (part.assignedInstruments.some(ai => ai.instrumentId === instId) || atCapacity) {
             const el = (document.querySelector(`[data-testid="part-${part.id}"]`) as HTMLElement)?.closest('div') as HTMLDivElement | null
             if (el) {
-              el.classList.add('animate-shake-x')
-              setTimeout(() => { if (el && el.isConnected) el.classList.remove('animate-shake-x') }, 220)
+              el.classList.add(styles.shake)
+              setTimeout(() => { if (el && el.isConnected) el.classList.remove(styles.shake) }, 220)
             }
             return
           }
@@ -97,15 +98,15 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
           el.click()
         }
       }}
-  className={`rounded-lg border p-4 md:p-5 transition h-full flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-navy)] focus-visible:ring-offset-2`}
+      className={styles.card}
     >
-      <div className="mb-2 text-base md:text-lg font-semibold" data-testid={`part-${part.id}`}>
-        <span className="inline-flex items-center gap-2">
+      <div className={styles.header} data-testid={`part-${part.id}`}>
+        <span className={styles.headerInner}>
           <PartIcon partId={part.id} />
           <span>{part.name}</span>
         </span>
       </div>
-  <ul className="list-none pl-0 flex flex-col flex-1 min-h-0 gap-y-1">
+  <ul className={styles.list}>
         {/* Always mounted placeholder that fades/collapses when not empty */}
         <motion.li
           key="empty"
@@ -113,7 +114,7 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
           animate={{ opacity: isEmpty ? 1 : 0, height: isEmpty ? 'auto' : 0, y: isEmpty ? 0 : -2 }}
           transition={{ duration: 0.18, ease: 'easeOut' }}
           style={{ overflow: 'hidden' }}
-          className={`text-sm text-gray-600 ${isEmpty ? '' : 'pointer-events-none'}`}
+          className={`${styles.placeholderItem} ${isEmpty ? '' : styles.placeholderItemHidden}`}
         >
           {placeholderText}
         </motion.li>
@@ -127,7 +128,7 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ type: 'spring', stiffness: 400, damping: 28, mass: 0.6 }}
-              className="flex-none overflow-visible"
+              className={styles.assignedItem}
             >
               <AssignedInstrument inst={inst} />
             </motion.li>
@@ -139,18 +140,17 @@ export default function PartCard({ partId }: { partId: 'melody' | 'harmony' | 'r
 }
 
 function PartIcon({ partId }: { partId: 'melody' | 'harmony' | 'rhythm' | 'texture' }) {
-  const cls = 'h-5 w-5 md:h-6 md:w-6 text-[var(--color-brand-navy)]'
   const stroke = 1.0
   switch (partId) {
     case 'melody':
-      return <Music className={cls} strokeWidth={stroke} aria-hidden="true" />
+      return <Music className={styles.iconBase} strokeWidth={stroke} aria-hidden="true" />
     case 'harmony':
-      return <Piano className={cls} strokeWidth={stroke} aria-hidden="true" />
+      return <Piano className={styles.iconBase} strokeWidth={stroke} aria-hidden="true" />
     case 'rhythm':
       // Prefer Drum if available; fallback to Timer for a ticking metaphor
-      return <Drum className={cls} strokeWidth={stroke} aria-hidden="true" />
+      return <Drum className={styles.iconBase} strokeWidth={stroke} aria-hidden="true" />
     case 'texture':
-      return <Waves className={cls} strokeWidth={stroke} aria-hidden="true" />
+      return <Waves className={styles.iconBase} strokeWidth={stroke} aria-hidden="true" />
     default:
       return null
   }

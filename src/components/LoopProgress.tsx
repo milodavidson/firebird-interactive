@@ -6,6 +6,7 @@ import * as Tooltip from '@radix-ui/react-tooltip'
 import { audioService } from '@/lib/audio/AudioService'
 import { usePartsStore } from '@/hooks/usePartsStore'
 import { secondsPerBeat, loopDuration, computeWithinLoopBeatAtTime } from '@/lib/audio/audioUtils'
+import * as styles from './LoopProgress.css'
 
 type Props = {
   size?: number
@@ -56,10 +57,10 @@ export function LoopProgress({ size = 72, stroke = 6, onToggle, disabled = false
             aria-label={play ? 'Pause' : 'Play'}
             onClick={onToggle}
             disabled={disabled}
-            className="relative inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--color-brand-navy)]"
+            className={styles.button}
             style={{ width: size, height: size }}
           >
-            <svg width={size} height={size} className="-rotate-90">
+            <svg width={size} height={size} className={styles.svg}>
               <circle
                 cx={size / 2}
                 cy={size / 2}
@@ -77,13 +78,13 @@ export function LoopProgress({ size = 72, stroke = 6, onToggle, disabled = false
                 strokeDasharray={circumference}
                 strokeDashoffset={dashOffset}
                 strokeLinecap="round"
-                className="transition-[stroke] duration-[250ms] ease-linear"
+                className={styles.progressCircle}
                 style={{ stroke: strokeColor }}
               />
             </svg>
-            <span className="absolute inset-0 grid place-items-center">
-              <span className={`grid h-10 w-10 place-items-center rounded-full shadow ${disabled ? 'bg-gray-200 text-gray-700 cursor-not-allowed' : 'bg-[var(--color-brand-navy)] text-white'}`}>
-                {play ? <Pause size={18} aria-hidden="true" /> : <Play size={18} className="translate-x-[1px]" aria-hidden="true" />}
+            <span className={styles.innerButtonWrapper}>
+              <span className={styles.innerButton({ disabled })}>
+                {play ? <Pause size={18} aria-hidden="true" /> : <Play size={18} className={styles.playIcon} aria-hidden="true" />}
               </span>
             </span>
           </button>
@@ -91,9 +92,9 @@ export function LoopProgress({ size = 72, stroke = 6, onToggle, disabled = false
 
         {disabled && (
           <Tooltip.Portal>
-            <Tooltip.Content side="bottom" sideOffset={6} className="z-50 rounded bg-black/90 px-2 py-1 text-xs text-white shadow">
+            <Tooltip.Content side="bottom" sideOffset={6} className={styles.tooltipContent}>
               Add an instrument to play.
-              <Tooltip.Arrow className="fill-black/90" />
+              <Tooltip.Arrow className={styles.tooltipArrow} />
             </Tooltip.Content>
           </Tooltip.Portal>
         )}

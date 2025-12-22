@@ -9,6 +9,7 @@ import LoopProgress from './LoopProgress'
 import { Eraser } from 'lucide-react'
 import * as Tooltip from '@radix-ui/react-tooltip'
 import { announcePolite } from '@/lib/a11y/announce'
+import * as styles from './PlayerControls.css'
 
 type Props = { scheduler?: AudioScheduler }
 
@@ -88,30 +89,25 @@ export default function PlayerControls({ scheduler }: Props = {}) {
   }, [hasAnyInstruments, play, scheduler, setPlay, transportStartRef])
 
   return (
-    <div data-tour="player-controls" className="grid grid-cols-[auto,1fr,auto] items-center w-full md:w-auto gap-2 sm:gap-3 md:gap-4 py-2">
-      <div className="justify-self-center md:justify-self-start translate-y-[4px] md:translate-x-[4px]">
+    <div data-tour="player-controls" className={styles.container}>
+      <div className={styles.loopProgressWrapper}>
         <LoopProgress size={56} onToggle={onToggle} disabled={!hasAnyInstruments} />
       </div>
-      <div className="flex items-center justify-center">
+      <div className={styles.tempoWrapper}>
         <div
           role="group"
           aria-label="Tempo"
-          className="relative grid grid-cols-2 h-10 rounded-full border border-gray-300 bg-gray-100 overflow-hidden w-full min-w-0 max-w-[220px] sm:max-w-[240px]"
+          className={styles.tempoGroup}
         >
           <span
             aria-hidden="true"
-            className="absolute top-0 bottom-0 left-0 w-1/2 rounded-full will-change-transform"
-            style={{
-              transform: tempo === 'fast' ? 'translateX(0%)' : 'translateX(100%)',
-              backgroundColor: tempo === 'fast' ? 'var(--color-brand-red)' : 'var(--color-brand-navy)',
-              transition: 'transform 250ms linear, background-color 250ms linear'
-            }}
+            className={`${styles.tempoSlider} ${tempo === 'fast' ? styles.tempoSliderFast : styles.tempoSliderSlow}`}
           />
           <button
             type="button"
             data-testid="tempo-fast"
             aria-pressed={tempo === 'fast'}
-            className={`relative z-10 h-full px-3 text-[13px] sm:text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 flex items-center justify-center ${tempo === 'fast' ? 'text-white' : 'text-gray-800'}`}
+            className={styles.tempoButton({ active: tempo === 'fast' })}
             onClick={() => setTempoValue(tempo === 'fast' ? 'slow' : 'fast')}
           >
             Fast
@@ -120,23 +116,23 @@ export default function PlayerControls({ scheduler }: Props = {}) {
             type="button"
             data-testid="tempo-slow"
             aria-pressed={tempo === 'slow'}
-            className={`relative z-10 h-full px-3 text-[13px] sm:text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 flex items-center justify-center ${tempo === 'slow' ? 'text-white' : 'text-gray-800'}`}
+            className={styles.tempoButton({ active: tempo === 'slow' })}
             onClick={() => setTempoValue(tempo === 'slow' ? 'fast' : 'slow')}
           >
             Slow
           </button>
         </div>
       </div>
-      <div className="justify-self-center md:justify-self-end">
+      <div className={styles.clearButtonWrapper}>
         <Tooltip.Provider>
           <Tooltip.Root delayDuration={250}>
             <Tooltip.Trigger asChild>
-              <button className="btn btn-outline pressable h-10 w-10 p-0" aria-label="Clear" onClick={onClear}><Eraser size={16} /></button>
+              <button className={styles.clearButton} aria-label="Clear" onClick={onClear}><Eraser size={16} /></button>
             </Tooltip.Trigger>
             <Tooltip.Portal>
-              <Tooltip.Content side="bottom" sideOffset={6} className="z-50 rounded bg-black/90 px-2 py-1 text-xs text-white shadow">
+              <Tooltip.Content side="bottom" sideOffset={6} className={styles.tooltipContent}>
                 Clear
-                <Tooltip.Arrow className="fill-black/90" />
+                <Tooltip.Arrow className={styles.tooltipArrow} />
               </Tooltip.Content>
             </Tooltip.Portal>
           </Tooltip.Root>

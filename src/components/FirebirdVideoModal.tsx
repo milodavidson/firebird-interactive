@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { X } from 'lucide-react'
 import { trapFocus } from '@/lib/a11y/focusTrap'
 import { announcePolite } from '@/lib/a11y/announce'
+import * as styles from './FirebirdVideoModal.css'
 
 type Props = {
   open: boolean
@@ -128,10 +129,10 @@ export default function FirebirdVideoModal({ open, onClose, triggerRef, videoEmb
   return createPortal(
     <AnimatePresence>
       {open && (
-        <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4" initial={{}} animate={{}} exit={{}}>
+        <motion.div className={styles.modalOverlay} initial={{}} animate={{}} exit={{}}>
           {/* Backdrop */}
           <motion.div
-            className="absolute inset-0 bg-black/50"
+            className={styles.backdrop}
             onClick={onClose}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -144,27 +145,26 @@ export default function FirebirdVideoModal({ open, onClose, triggerRef, videoEmb
             aria-modal="true"
             aria-labelledby="firebird-video-title"
             ref={dialogRef}
-            className="relative w-full max-w-3xl max-h-[90vh] rounded-lg border border-gray-200 bg-white shadow-xl p-4 md:p-6 overflow-auto"
+            className={styles.dialog}
             initial={{ opacity: 0, y: 18, scale: 0.992 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.992 }}
             transition={{ duration: reducedMotion ? 0 : 0.22, ease: 'easeOut' }}
-            style={{ zIndex: 60 }}
           >
-            <div className="flex items-start justify-between gap-4">
-              <div id="firebird-video-title" className="font-semibold text-lg">Excerpt from <em>The Firebird</em></div>
+            <div className={styles.header}>
+              <div id="firebird-video-title" className={styles.title}>Excerpt from <em>The Firebird</em></div>
               <button
                 ref={closeRef}
                 aria-label="Close video"
-                className="text-gray-500 hover:text-gray-700"
+                className={styles.closeButton}
                 onClick={onClose}
               >
                 <X size={18} />
               </button>
             </div>
 
-            <div className="mt-4 w-full bg-black">
-              <div className="aspect-video w-full">
+            <div className={styles.videoContainer}>
+              <div className={styles.videoAspect}>
                 {iframeSrc ? (
                   <iframe
                     ref={iframeRef}
@@ -176,12 +176,12 @@ export default function FirebirdVideoModal({ open, onClose, triggerRef, videoEmb
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     referrerPolicy="strict-origin-when-cross-origin"
                     allowFullScreen
-                    className="w-full h-full rounded"
+                    className={styles.iframe}
                     loading="lazy"
                   />
                 ) : (
                   // lightweight placeholder while iframe src is not set
-                  <div className="w-full h-full flex items-center justify-center text-sm text-gray-400">Loading video…</div>
+                  <div className={styles.placeholder}>Loading video…</div>
                 )}
               </div>
             </div>

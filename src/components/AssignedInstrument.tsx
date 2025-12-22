@@ -8,6 +8,8 @@ import { Headphones, Volume2, VolumeX, Trash2 } from 'lucide-react'
 import { useAssignments } from '@/hooks/useAssignments'
 import * as Tooltip from '@radix-ui/react-tooltip'
 import { AnimatePresence, motion } from 'framer-motion'
+import * as styles from './AssignedInstrument.css'
+import { srOnly } from '@/styles/shared.css'
 
 export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentType }) {
   const { soloInstanceId, setParts, setSoloInstanceId, parts, play } = usePartsStore()
@@ -34,21 +36,21 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
   }, [inst.isLoading, inst.name, play])
 
   return (
-  <div data-inst-id={inst.id} data-queued={!!inst.isLoading} className="relative flex flex-wrap xl:flex-nowrap items-center gap-x-1.5 lg:gap-x-1.5 gap-y-0.5 pt-1 pb-1 overflow-visible min-h-[clamp(48px,6vh,140px)] max-h-[120px] src-assigned-instrument-expand">
+  <div data-inst-id={inst.id} data-queued={!!inst.isLoading} className={styles.container}>
       {/* Screen reader only live region to announce when a queued instrument starts */}
-      <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">{liveMsg}</div>
+      <div role="status" aria-live="polite" aria-atomic="true" className={srOnly}>{liveMsg}</div>
       <AnimatePresence initial={false}>
         {play && inst.isLoading && inst.queueScheduleTime != null && inst.queueStartTime != null && (
           <QueuedStrip key={`queued-${inst.id}`} scheduleTime={inst.queueScheduleTime} startTime={inst.queueStartTime} />
         )}
       </AnimatePresence>
       {/* Icon/name block */}
-  <div className="flex min-w-0 items-center gap-2 order-1 xl:w-[64px] xl:flex-none xl:shrink-0">
+  <div className={styles.iconBlock}>
         <InstrumentFamilyIcon instrumentId={inst.instrumentId} />
-        <span className="sr-only" data-testid="inst-name">{inst.name}{inst.hasError ? ' (File missing)' : ''}</span>
+        <span className={srOnly} data-testid="inst-name">{inst.name}{inst.hasError ? ' (File missing)' : ''}</span>
       </div>
       {/* Controls block */}
-  <div className="ml-auto xl:ml-0 flex items-center gap-1 md:gap-1.5 shrink-0 order-2 lg:order-3 xl:w-[128px] xl:justify-end">
+  <div className={styles.controlsBlock}>
         <Tooltip.Provider>
           <Tooltip.Root delayDuration={250}>
             <Tooltip.Trigger asChild>
@@ -57,7 +59,7 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
                 data-testid="solo-toggle"
                 aria-label={isSoloed ? 'Unsolo' : 'Solo'}
                 aria-pressed={isSoloed}
-                className={`btn pressable px-1.5 py-1 text-[11px] md:px-2.5 md:py-1.5 md:text-sm ${isSoloed ? 'bg-[var(--color-brand-navy)] text-white border border-[var(--color-brand-navy)]' : 'btn-outline'}`}
+                className={styles.controlButton({ active: isSoloed ? 'solo' : false })}
                 onClick={() => {
                   const nextSolo = isSoloed ? null : inst.id
                   setSoloInstanceId(nextSolo)
@@ -73,9 +75,9 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
               </button>
             </Tooltip.Trigger>
             <Tooltip.Portal>
-              <Tooltip.Content sideOffset={6} className="rounded bg-black/90 px-2 py-1 text-xs text-white shadow">
+              <Tooltip.Content sideOffset={6} className={styles.tooltip}>
                 {isSoloed ? 'Unsolo' : 'Solo'}
-                <Tooltip.Arrow className="fill-black/90" />
+                <Tooltip.Arrow className={styles.tooltipArrow} />
               </Tooltip.Content>
             </Tooltip.Portal>
           </Tooltip.Root>
@@ -86,7 +88,7 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
                 data-testid="mute-toggle"
                 aria-label={inst.isMuted ? 'Unmute' : 'Mute'}
                 aria-pressed={inst.isMuted}
-                className={`btn pressable px-1.5 py-1 text-[11px] md:px-2.5 md:py-1.5 md:text-sm ${inst.isMuted ? 'bg-[var(--color-brand-red)] text-white border border-[var(--color-brand-red)]' : 'btn-outline'}`}
+                className={styles.controlButton({ active: inst.isMuted ? 'mute' : false })}
                 onClick={() => {
                   const nextMuted = !inst.isMuted
                   // Update state
@@ -104,9 +106,9 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
               </button>
             </Tooltip.Trigger>
             <Tooltip.Portal>
-              <Tooltip.Content sideOffset={6} className="rounded bg-black/90 px-2 py-1 text-xs text-white shadow">
+              <Tooltip.Content sideOffset={6} className={styles.tooltip}>
                 {inst.isMuted ? 'Unmute' : 'Mute'}
-                <Tooltip.Arrow className="fill-black/90" />
+                <Tooltip.Arrow className={styles.tooltipArrow} />
               </Tooltip.Content>
             </Tooltip.Portal>
           </Tooltip.Root>
@@ -115,16 +117,16 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
               <button
                 type="button"
                 aria-label={`Remove ${inst.name}`}
-                className="btn btn-outline pressable px-1.5 py-1 text-[11px] md:px-2.5 md:py-1.5 md:text-sm"
+                className={styles.controlButton({ active: false })}
                 onClick={() => removeInstrument(inst.id)}
               >
                 <Trash2 size={14} aria-hidden="true" />
               </button>
             </Tooltip.Trigger>
             <Tooltip.Portal>
-              <Tooltip.Content sideOffset={6} className="rounded bg-black/90 px-2 py-1 text-xs text-white shadow">
+              <Tooltip.Content sideOffset={6} className={styles.tooltip}>
                 Remove
-                <Tooltip.Arrow className="fill-black/90" />
+                <Tooltip.Arrow className={styles.tooltipArrow} />
               </Tooltip.Content>
             </Tooltip.Portal>
           </Tooltip.Root>
@@ -133,7 +135,7 @@ export default function AssignedInstrument({ inst }: { inst: AssignedInstrumentT
       {/* Compact slider (wraps under on small screens) */}
       <input
         aria-label={`${inst.name} balance`}
-  className="order-last basis-full w-full xl:order-2 xl:basis-auto xl:w-auto xl:flex-1 ml-0 h-[7px] min-w-[80px] flex-1 range--pink"
+  className={styles.slider}
         style={{ ['--range-progress' as any]: `${inst.volumeBalance}%` }}
         type="range"
         min={0}
@@ -165,7 +167,7 @@ function InstrumentFamilyIcon({ instrumentId }: { instrumentId: string }) {
     default:
       return null
   }
-  return <img src={src} alt={alt} className="h-6 w-auto min-w-[24px] max-w-none select-none shrink-0 flex-none object-contain" draggable={false} />
+  return <img src={src} alt={alt} className={styles.iconImage} draggable={false} />
 }
 
 function QueuedProgress({ scheduleTime, startTime, small }: { scheduleTime: number; startTime: number; small?: boolean }) {
@@ -191,9 +193,9 @@ function QueuedProgress({ scheduleTime, startTime, small }: { scheduleTime: numb
   }, [scheduleTime, startTime])
   const style = small ? { width: 44, height: 6 } : { width: 60, height: 6 }
   return (
-    <span aria-label="Queued" title="Queued" data-testid="queued-progress" className="relative inline-block overflow-hidden rounded bg-gray-200" style={style}>
-      <span className="block h-full bg-gray-500 transition-[width] duration-75" style={{ width: `${p * 100}%` }} />
-      <span className="absolute inset-0 shimmer" aria-hidden="true" />
+    <span aria-label="Queued" title="Queued" data-testid="queued-progress" className={styles.queuedProgressContainer} style={style}>
+      <span className={styles.queuedProgressFill} style={{ width: `${p * 100}%` }} />
+      <span className={styles.shimmer} aria-hidden="true" />
     </span>
   )
 }
@@ -265,15 +267,14 @@ function QueuedStrip({ scheduleTime, startTime }: { scheduleTime: number; startT
     <motion.span
       aria-label="Queued"
       title="Queued"
-      className="pointer-events-none absolute left-0 right-0 top-0 h-[2px] overflow-hidden rounded-full bg-gray-200"
-      style={{ transformOrigin: 'top' }}
+      className={styles.queuedStripContainer}
       initial={{ opacity: 1, scaleY: 1 }}
       animate={{ opacity: 1, scaleY: 1 }}
       exit={{ opacity: 0, scaleY: 0.6 }}
       transition={{ duration: 0.2, ease: 'easeOut' }}
     >
-      <span ref={fillRef} className="absolute inset-y-0 left-0 w-full bg-gray-500 shadow-[0_0_8px_rgba(19,32,103,0.35)] will-change-transform" style={{ transform: 'scaleX(0)' }} />
-      <span className="absolute inset-0 shimmer" aria-hidden="true" />
+      <span ref={fillRef} className={styles.queuedStripFill} />
+      <span className={styles.shimmer} aria-hidden="true" />
     </motion.span>
   )
 }

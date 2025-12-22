@@ -1,5 +1,5 @@
 import React from 'react'
-import './globals.css'
+import '@/styles/theme.css'
 import localFont from 'next/font/local'
 
 const cadiz = localFont({
@@ -19,7 +19,7 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={cadiz.variable}>
-      <body className={`${cadiz.className} min-h-svh text-gray-900`}>
+      <body className={cadiz.className} style={{ minHeight: '100svh', color: '#111827' }}>
         {children}
       </body>
     </html>
