@@ -48,7 +48,7 @@ export function LoopProgress({ size = 72, stroke = 6, onToggle, disabled = false
     return circumference * (1 - progress)
   }, [circumference, progress])
 
-  const strokeColor = uiTempo === 'fast' ? 'var(--color-brand-red)' : 'var(--color-brand-navy)'
+  const strokeColor = uiTempo === 'fast' ? '#e22237' : '#132067'
   return (
     <Tooltip.Provider>
       <Tooltip.Root open={disabled ? undefined : false} delayDuration={0}>
